@@ -28,21 +28,37 @@
    
    3. [GitHub - owid/covid-19-data: Data on COVID-19 (coronavirus) confirmed cases, deaths, and tests • All countries • Updated daily by Our World in Data](https://github.com/owid/covid-19-data)
    
-3. [IBM Resources](https://developer.ibm.com/callforcode/get-started/covid-19/)
+   4. More Not Added here
 
+3. [IBM Resources](https://developer.ibm.com/callforcode/get-started/covid-19/)
+   
    1. [IBM Listing of Available DATASETS to use](https://developer.ibm.com/callforcode/blogs/useful-data-sets-for-call-for-code-2020/)
    
    2. [IBM Model Project - Using deep learning to analyze X-Ray scans and predict healthy or not](https://developer.ibm.com/articles/using-deep-learning-to-take-on-covid-19/)
    
-   2. [Chatbot tutorial ??? (Potential way to include IBM Cloud Service)](https://developer.ibm.com/callforcode/get-started/covid-19/crisis-communication/)
+   3. [Chatbot tutorial ??? (Potential way to include IBM Cloud Service)](https://developer.ibm.com/callforcode/get-started/covid-19/crisis-communication/)
 
 # Potential problems to solve
 
 1. Testing
+   
+   1. Random Forest Algorithm sorting by symptoms
+   
+   2. Image recognition sorting?
 
 2. Avoidance of high-density areas
+   
+   1. Wi-Fi + Bluetooth + Geo-Location data tracking people in contact with. (Phone App)
 
 3. Predictions
+
+4. Personal Protection Equipment (Dynamic allocation of resources)
+   
+   1. A program to dynamically plan and organize supply chains. (Web-based Service)
+
+5. Milk Supply Chain
+   
+   1. A program to connect & organize buyers, producers, and transport. (Web-based Service)
 
 # Potential limitations
 
@@ -50,18 +66,8 @@
 
 2. Limited computing power
 
-#Project Ideas
-
-1. Implementing a more efficient "mass testing" with the help of pre-screening and planning from computers
-
-2. Developing an APP that encorporates the concept of Federated Learning to compile data and tell people whether they have been 
-   "in contact" with people infected with the virus without loss of data privacy
-
-
 # To-Do
 
 - [ ] Find potential problems to solve
 
 - [ ] Test potential solutions
-
-
