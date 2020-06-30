@@ -37,6 +37,8 @@
    2. [IBM Model Project - Using deep learning to analyze X-Ray scans and predict healthy or not](https://developer.ibm.com/articles/using-deep-learning-to-take-on-covid-19/)
    
    3. [Chatbot tutorial ??? (Potential way to include IBM Cloud Service)](https://developer.ibm.com/callforcode/get-started/covid-19/crisis-communication/)
+   
+   4. [BlueMIX Pythn Server example](https://www.ibm.com/blogs/cloud-computing/2014/08/18/getting-started-python-ibm-bluemix/)
 
 # Potential problems to solve
 
