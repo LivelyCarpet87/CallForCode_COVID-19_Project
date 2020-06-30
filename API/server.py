@@ -1,23 +1,26 @@
 import flask
 from flask import request, jsonify
 import sqlite3
+import json
 
 app = flask.Flask(__name__)
 
 
-@app.route('/InitSelf/', methods=["POST"])
-def recievePositiveReport():
-    self = request.form['Self']
+@app.route('/InitSelf', methods=["POST"])
+def initSelf():
+    data = request.get_json(force=True)
+    self = data['Self']
     secret = initNewUser(self)
     return jsonify(
         secret = secret
     )
 
 
-@app.route('/positiveReport/', methods=["POST"])
+@app.route('/positiveReport', methods=["POST"])
 def recievePositiveReport():
-    positives = request.form['Positives']
-    secret = request.form['Secret']
+    data = request.get_json(force=True)
+    positives = data['Positives']
+    secret = data['Secret']
     valid = verifySecret(secret)
     if valid:
         markPositive(positives)
@@ -27,9 +30,10 @@ def recievePositiveReport():
     )
 
 
-@app.route('/QueryMetMacAddr/', methods=["POST"])
+@app.route('/QueryMetMacAddr', methods=["POST"])
 def recieveQueryMetMacAddr():
-    queries = request.form['Queries']
+    data = request.get_json(force=True)
+    queries = data['Queries']
     queryAddr(queries)
     return jsonify(
 
@@ -37,7 +41,7 @@ def recieveQueryMetMacAddr():
 
 
 def initNewUser(self):
-    pass
+    return "superKey"
 
 
 def verifySecret(secret):
