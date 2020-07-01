@@ -1,61 +1,200 @@
 import flask
 from flask import request, jsonify
+from flask_api import status
 import sqlite3
+import re
 import json
+import hashlib
+import os
+
+isMacAddr = re.compile(r"([\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2})")
+isFloodAddr = re.compile("FF:FF:FF:FF:FF:FF",re.I)
+
+connPos = sqlite3.connect('Positives.db')
+cursPos = connPos.cursor()
+connSec = sqlite3.connect('Secrets.db')
+cursSec = connSec.cursor()
+
+cursPos.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='positive' ''')
+#if the count is 1, then table exists
+if cursPos.fetchone()[0] != 1 : {
+	cursPos.execute("create table positive (MAC_Addr)")
+}
+connPos.commit()
+cursSec.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='secrets' ''')
+#if the count is 1, then table exists
+if cursSec.fetchone()[0] != 1 : {
+	cursSec.execute("create table secrets (MAC_Addr, Secret_Key)")
+}
+connSec.commit()
+
 
 app = flask.Flask(__name__)
 
 
+#  Takes in a POST request with a json object containing a SINGLE MAC address
+#  Returns a secret key based on the MAC address and a HTTP Code 201
+#  Stores a copy of secret in the local database
 @app.route('/InitSelf', methods=["POST"])
 def initSelf():
     data = request.get_json(force=True)
     self = data['Self']
-    secret = initNewUser(self)
+    selfList = parseMacAddr(self)
+    if not selfList:
+        return 'Bad MAC Address!', 400
+    secret = initNewUser(selfList)
     return jsonify(
-        secret = secret
-    )
+        Secret = secret
+    ), status.HTTP_201_CREATED
 
 
+#  Takes in a POST request with a json object containing a SINGLE MAC address and a secret key
+#  Returns a HTTP 201 and a msg = "Get well soon." message in JSON
 @app.route('/positiveReport', methods=["POST"])
-def recievePositiveReport():
+def receivePositiveReport():
     data = request.get_json(force=True)
-    positives = data['Positives']
+    self = data['Self']
     secret = data['Secret']
-    valid = verifySecret(secret)
+    addr = parseMacAddr(self)
+    if not addr:
+        return 'Bad MAC Address!', 400
+    valid = verifySecret(addr[0],secret)
     if valid:
-        markPositive(positives)
+        markPositive(addr[0])
+        return jsonify(
+            msg = "Get well soon. "
+        ), status.HTTP_201_CREATED
+    else:
+        return 'Received', status.HTTP_200_OK
 
-    return jsonify(
-        msg = "Get well soon. "
-    )
 
-
+#  Takes in a POST request string with MAC addresses in CSV format
+#  Returns a Boolean atRisk status in JSON
 @app.route('/QueryMetMacAddr', methods=["POST"])
-def recieveQueryMetMacAddr():
+def receiveQueryMetMacAddr():
     data = request.get_json(force=True)
     queries = data['Queries']
-    queryAddr(queries)
+    addrList = parseMacAddr(queries)
+    if not addrList:
+        return 'Bad MAC Address!', 400
+    state = queryAddr(addrList)
     return jsonify(
-
-    )
-
-
-def initNewUser(self):
-    return "superKey"
+        atRisk = state
+    ), status.HTTP_200_OK
 
 
-def verifySecret(secret):
-    pass
+#  Takes in a POST request with a json object containing a SINGLE MAC address and a secret key
+#  Returns a HTTP 201 and a msg = "Stay healthy." message in JSON
+@app.route('/negativeReport', methods=["POST"])
+def receiveNegativeReport():
+    data = request.get_json(force=True)
+    self = data['Self']
+    secret = data['Secret']
+    addr = parseMacAddr(self)
+    if not addr:
+        return 'Bad MAC Address!', 400
+    valid = verifySecret(addr[0],secret)
+    if valid:
+        markNegative(addr[0])
+        return jsonify(
+            msg = "Stay healthy. "
+        ), status.HTTP_201_CREATED
+    else:
+        return 'Received', status.HTTP_200_OK
 
-def markPositive(positives):
-    pass
+
+def initNewUser(selfList):
+    connPos = sqlite3.connect('Positives.db')
+    cursPos = connPos.cursor()
+    connSec = sqlite3.connect('Secrets.db')
+    cursSec = connSec.cursor()
+
+    addr = selfList[0]
+    secret = "SecretAlreadyGenerated"
+
+    cursSec.execute("select * from secrets where MAC_Addr=:MAC_Addr", {"MAC_Addr": addr,} )
+    match = cursSec.fetchone()
+
+    if not match:
+        secret = hashlib.sha224((addr+str(os.urandom(128))).encode('utf-8')).hexdigest()
+        cursSec.execute("insert into secrets values (?, ?)", (addr, secret))
+        connSec.commit()
+
+    connPos.close()
+    connSec.close()
+    return secret
 
 
-def queryAddr(queries):
-    pass
+def verifySecret(addr, secret):
+    connPos = sqlite3.connect('Positives.db')
+    cursPos = connPos.cursor()
+    connSec = sqlite3.connect('Secrets.db')
+    cursSec = connSec.cursor()
+
+    cursSec.execute("select * from secrets where MAC_Addr=:MAC_Addr and Secret_Key=:Secret_Key", {"MAC_Addr": addr, "Secret_Key": secret})
+    match = cursSec.fetchone()
+
+    connPos.close()
+    connSec.close()
+    if match is None:
+        return False
+    else:
+        return True
+
+
+def markPositive(positive):
+    connPos = sqlite3.connect('Positives.db')
+    cursPos = connPos.cursor()
+    connSec = sqlite3.connect('Secrets.db')
+    cursSec = connSec.cursor()
+
+    cursPos.execute("select * from positive where MAC_Addr=:MAC_Addr", {"MAC_Addr": positive,})
+    match = cursPos.fetchone()
+    if not match:
+        cursPos.execute("insert into positive values (?)", (positive, ))
+        connPos.commit()
+
+    connPos.close()
+    connSec.close()
+
+
+def markNegative(negative):
+    connPos = sqlite3.connect('Positives.db')
+    cursPos = connPos.cursor()
+    connSec = sqlite3.connect('Secrets.db')
+    cursSec = connSec.cursor()
+
+    cursPos.execute("delete from positive where MAC_Addr=:MAC_Addr",  {"MAC_Addr": negative,})
+    connPos.commit()
+
+    connPos.close()
+    connSec.close()
+
+
+def queryAddr(addrList):
+    connPos = sqlite3.connect('Positives.db')
+    cursPos = connPos.cursor()
+    connSec = sqlite3.connect('Secrets.db')
+    cursSec = connSec.cursor()
+
+    for addr in addrList:
+        cursPos.execute("select * from positive where MAC_Addr=:addr", {"addr": addr})
+        match = cursPos.fetchone()
+        if match is not None:
+            connPos.close()
+            connSec.close()
+            return True
+    connPos.close()
+    connSec.close()
+    return False
 
 
 def parseMacAddr(AddrStr):
-    pass
+    #sanitization of all input
+    addrList = re.findall(isMacAddr,AddrStr)
+    for addr in addrList:
+        if re.match(isFloodAddr,addr) is not None:
+            addrList.remove(addr)
+    return addrList
 
 app.run()

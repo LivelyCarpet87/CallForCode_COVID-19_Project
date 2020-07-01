@@ -38,15 +38,17 @@ def initSelf(c,MacAddrSelf):
     if code == 201:
         return body
     elif code != 200:
-        return "Retry"
+        #  Retry
+        return 2
     else:
-        return "Unknown Issue Occurred"
+        #  Unknown Error
+        return 1
 
 
 def positiveReport(c,MacAddrSelf,secretKey):
-    c.setopt(c.URL, baseURL+'PositiveReport')
+    c.setopt(c.URL, baseURL+'positiveReport')
     d = {}
-    d['Positives'] = MacAddrSelf
+    d['Self'] = MacAddrSelf
     d['Secret'] = secretKey
     post_data = json.dumps(d)
     # Form data must be provided already urlencoded.
@@ -63,12 +65,46 @@ def positiveReport(c,MacAddrSelf,secretKey):
 
     c.reset()
 
-    if code == 200 and "Get well soon. " in body:
-        return "Server Ack Success"
-    elif code != 200:
-        return "Retry"
+    if code == 201 and "Get well soon. " in body:
+        #  Server Ack Success
+        return 0
+    elif code == 200:
+        #  Retry
+        return 2
     else:
-        return "Unknown Issue Occurred"
+        #  Unknown Issue Occurred
+        return 1
+
+
+ef negativeReport(c,MacAddrSelf,secretKey):
+    c.setopt(c.URL, baseURL+'negativeReport')
+    d = {}
+    d['Self'] = MacAddrSelf
+    d['Secret'] = secretKey
+    post_data = json.dumps(d)
+    # Form data must be provided already urlencoded.
+    postfields = urlencode(post_data)
+    # Sets request method to POST,
+    # Content-Type header to application/x-www-form-urlencoded
+    # and data to send in request body.
+    c.setopt(c.POSTFIELDS, postfields)
+    c.setopt(c.WRITEFUNCTION, buffer.write)
+    c.perform()
+
+    code = curl.getinfo(pycurl.HTTP_CODE)
+    body = buffer.getvalue()
+
+    c.reset()
+
+    if code == 201 and "Stay healthy." in body:
+        #  Server Ack Success
+        return 0
+    elif code == 200:
+        #  Retry
+        return 2
+    else:
+        #  Unknown Issue Occurred
+        return 1
 
 
 def queryMetMacAddr(c,MacAddrMet):
@@ -90,12 +126,15 @@ def queryMetMacAddr(c,MacAddrMet):
 
     c.reset()
 
-    if code == 200 and "Matched. " in body:
-        return "Positive Match"
+    if code == 200 and '{"atRisk":true}' in body:
+        #  Contacted Positive MAC Addr
+        return 1
     elif code != 200:
-        return "Retry"
+        #  Retry
+        return 2
     else:
-        return "No Match"
+        #  No Match
+        return 0
 
 
 def freeResources():
