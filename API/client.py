@@ -10,7 +10,7 @@ except ImportError:
 
 this = sys.modules[__name__]
 this.__buffer_obj__ = BytesIO()
-this.__baseURL__ = 'http://127.0.0.1:5000/'
+this.__baseURL__ = 'http://0.0.0.0:8000/'
 this.__curlHandle__ = pycurl.Curl()
 
 def initSelf(MacAddrSelf):
@@ -47,11 +47,12 @@ def initSelf(MacAddrSelf):
         return 1
 
 
-def positiveReport(MacAddrSelf,secretKey):
+def positiveReport(MacAddrSelf,secretKey,metAddrList):
     c = this.__curlHandle__
     c.setopt(c.URL, this.__baseURL__+'positiveReport')
     d = {}
     d['Self'] = MacAddrSelf
+    d['MetAddrList'] = metAddrList
     d['Secret'] = secretKey
     # Form data must be provided already urlencoded.
     postfields = json.dumps(d)
@@ -109,11 +110,12 @@ def negativeReport(MacAddrSelf,secretKey):
         return 1
 
 
-def queryMetMacAddr(MacAddrMet):
+def queryMyMacAddr(self,secret):
     c = this.__curlHandle__
-    c.setopt(c.URL, this.__baseURL__+'QueryMetMacAddr')
+    c.setopt(c.URL, this.__baseURL__+'QueryMyMacAddr')
     d = {}
-    d['Queries'] = MacAddrMet
+    d['Self'] = self
+    d['Secret'] = secret
     # Form data must be provided already urlencoded.
     postfields = json.dumps(d)
     # Sets request method to POST,
@@ -151,11 +153,14 @@ def freeResources():
 
 def tests():
     self = "FF:11:2E:7A:5B:6A"
+    others = "4F:11:2E:7A:5B:6A, 4F:1A:2E:7A:5B:6A, 4F:11:77:7A:5B:6A"
     secret = initSelf(self)
     print(secret)
-    print(queryMetMacAddr(self))
-    print(positiveReport(self,secret))
-    print(queryMetMacAddr(self))
+    print(queryMyMacAddr(self,secret))
+    print(positiveReport(self,secret,others))
+    print(queryMyMacAddr(self,secret))
     print(negativeReport(self,secret))
-    print(queryMetMacAddr(self))
+    print(queryMyMacAddr(self,secret))
     freeResources()
+
+tests()
