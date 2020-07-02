@@ -110,6 +110,24 @@ def receiveNegativeReport():
         return 'Received', status.HTTP_200_OK
 
 
+@app.route('/ForgetMe', methods=["POST"])
+def forgetSelf():
+    data = request.get_json(force=True)
+    self = data['Self']
+    secret = data['Secret']
+    addr = parseMacAddr(self)
+    if not addr:
+        return 'Bad MAC Address!', 400
+    valid = verifySecret(addr[0],secret)
+    if valid:
+        deleteUser(addr[0],secret)
+        return jsonify(
+            msg = "Goodbye. "
+        ), status.HTTP_201_CREATED
+    else:
+        return 'Received', status.HTTP_200_OK
+
+
 def initNewUser(selfList):
     connPos = sqlite3.connect('Positives.db')
     cursPos = connPos.cursor()
@@ -139,7 +157,10 @@ def verifySecret(addr, secret):
     cursSec = connSec.cursor()
 
     safetyCheck = re.compile(r'^([a-z0-9]{56})$')
-    safeSecret = safetyCheck.fullmatch(secret).group(1)
+    try:
+        safeSecret = safetyCheck.fullmatch(str(secret)).group(1)
+    except AttributeError:
+        return False
     if not safeSecret:
         return False
 
@@ -177,6 +198,21 @@ def markNegative(negative):
 
     cursPos.execute("delete from positive where MAC_Addr=:MAC_Addr",  {"MAC_Addr": negative,})
     connPos.commit()
+
+    connPos.close()
+    connSec.close()
+
+
+def deleteUser(user, secret):
+    connPos = sqlite3.connect('Positives.db')
+    cursPos = connPos.cursor()
+    connSec = sqlite3.connect('Secrets.db')
+    cursSec = connSec.cursor()
+
+    cursPos.execute("delete from positive where MAC_Addr=:MAC_Addr",  {"MAC_Addr": user,})
+    connPos.commit()
+    cursSec.execute("delete from secrets where MAC_Addr=:MAC_Addr and Secret_Key=:Secret_Key",  {"MAC_Addr": user,"Secret_Key": secret})
+    connSec.commit()
 
     connPos.close()
     connSec.close()
