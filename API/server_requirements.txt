@@ -1,0 +1,6 @@
+flask
+flask_api
+sqlite3
+hashlib
+re
+json
