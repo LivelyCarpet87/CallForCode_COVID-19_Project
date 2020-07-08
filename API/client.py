@@ -23,7 +23,6 @@ def initSelf(MacAddrSelf):
     # Sets request method to POST,
     # Content-Type header to application/x-www-form-urlencoded
     # and data to send in request body.
-    print(postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
     c.perform()
