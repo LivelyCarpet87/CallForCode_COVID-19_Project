@@ -129,8 +129,8 @@ def removePerson(MAC_Addr):
 
 def cloudantCleanup():
     client = this.__client__
-    myDatabase = this.__myDatabase__
-    client.disconnect()
+    if client:
+        client.disconnect()
 
 def testCloudant():
     init()
@@ -147,4 +147,4 @@ def testCloudant():
     print(removePerson("ab:bc:cd:de:ef:99"))
     cloudantCleanup()
 
-testCloudant()
+#testCloudant()
