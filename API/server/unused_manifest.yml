@@ -1,8 +1,0 @@
-disk_quota: 64M
-instances: 1
-timeout: 120
-memory: 64M
-applications:
-- name: CovidTracer
-  host: CovidTracer
-  web: gunicorn wsgi:application
