@@ -54,12 +54,12 @@ def receivePositiveReport():
 		return 'Bad MAC Address!', 400
 	valid = verifySecret(addrList[0],secret)
 	if valid:
-		markPositive(addrList, self, secret)
+		markPositive(addrList, self)
 		return jsonify(
 			msg = "Get well soon. "
 		), status.HTTP_201_CREATED
 	else:
-		return 'Received', status.HTTP_200_OK
+		return 'Incorect Secret Key', 403
 
 
 #  Takes in a POST request string with MAC addresses in CSV format
@@ -107,7 +107,7 @@ def receiveNegativeReport():
 			msg = "Stay healthy. "
 		), status.HTTP_201_CREATED
 	else:
-		return 'Received', status.HTTP_200_OK
+		return 'Incorect Secret Key', 403
 
 
 @app.route('/ForgetMe', methods=["POST"])
@@ -125,7 +125,7 @@ def forgetSelf():
 			msg = "Goodbye. "
 		), status.HTTP_201_CREATED
 	else:
-		return 'Received', status.HTTP_200_OK
+		return 'Incorect Secret Key', 403
 
 
 def initNewUser(selfList):
@@ -139,7 +139,7 @@ def initNewUser(selfList):
 	else: #person, exists, but may not be initiated. This only occurs if person contacted a person marked positive
 		if ccm.getState(addr) == 3:
 			secret = hashlib.sha224((addr+str(os.urandom(128))).encode('utf-8')).hexdigest()
-			success = cmm.changeSecretKey(addr,secret)
+			success = ccm.changeSecretKey(addr,secret)
 			if not success:
 				raise cloudant.error.CloudantDatabaseException
 	return secret
@@ -161,9 +161,7 @@ def verifySecret(addr, secret):
 		return False
 
 
-def markPositive(addrList, self, secret):
-	if not verifySecret(self,secret):  # Do nothing if secret key does not match
-		return None
+def markPositive(addrList, self):
 	for positive in addrList:
 		if ccm.personExists(positive):  # Change state if person exists
 			# retry the write to the database up to 10 times if it fails
