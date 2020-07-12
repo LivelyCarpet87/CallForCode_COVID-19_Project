@@ -31,7 +31,7 @@ def initSelf():
 		return 'Bad MAC Address!', 400
 	secret = initNewUser(selfList)
 	if secret == "":
-		return 'Already Initiated. ', 400
+		return 'Already Initiated. ', 403
 	elif secret is None:
 		return status.HTTP_500_INTERNAL_SERVER_ERROR
 	else:
@@ -49,12 +49,13 @@ def receivePositiveReport():
 	self = data['Self']
 	secret = data['Secret']
 	metAddrList = data['MetAddrList']
-	addrList = parseMacAddr(self+", "+metAddrList)
-	if not addrList:
+	self = parseMacAddr(self)
+	metAddrList = parseMacAddr(metAddrList)
+	if not metAddrList or not self:
 		return 'Bad MAC Address!', 400
-	valid = verifySecret(addrList[0],secret)
+	valid = verifySecret(self[0],secret)
 	if valid:
-		markPositive(addrList, self)
+		markPositive(addrList, self[0])
 		return jsonify(
 			msg = "Get well soon. "
 		), status.HTTP_201_CREATED
@@ -69,11 +70,11 @@ def receiveQueryMyMacAddr():
 	data = request.get_json(force=True)
 	self = data['Self']
 	secret = data['Secret']
-	if not verifySecret(self,secret):
-		return 'Bad Request Key', 403
 	addrList = parseMacAddr(self)
 	if not addrList:
 		return 'Bad MAC Address!', 400
+	if not verifySecret(addrList[0],secret):
+		return 'Bad Request Key', 403
 	state = queryAddr(addrList[0],secret)
 	if state == 1:
 		return jsonify(
@@ -137,7 +138,7 @@ def initNewUser(selfList):
 		if not success:
 			raise cloudant.error.CloudantDatabaseException
 	else: #person, exists, but may not be initiated. This only occurs if person contacted a person marked positive
-		if ccm.getState(addr) == 3:
+		if ccm.getState(addr) == 3 and ccm.getSecretKey(addr) == "":
 			secret = hashlib.sha224((addr+str(os.urandom(128))).encode('utf-8')).hexdigest()
 			success = ccm.changeSecretKey(addr,secret)
 			if not success:
