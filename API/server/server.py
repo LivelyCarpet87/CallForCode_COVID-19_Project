@@ -55,7 +55,7 @@ def receivePositiveReport():
 		return 'Bad MAC Address!', 400
 	valid = verifySecret(self[0],secret)
 	if valid:
-		markPositive(addrList, self[0])
+		markPositive(metAddrList, self[0])
 		return jsonify(
 			msg = "Get well soon. "
 		), status.HTTP_201_CREATED
