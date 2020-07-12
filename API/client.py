@@ -7,18 +7,20 @@ try:
     from io import BytesIO
 except ImportError:
     from StringIO import StringIO as BytesIO
+import logging
 
 this = sys.modules[__name__]
 this.__buffer_obj__ = BytesIO()
 #this.__baseURL__ = 'https://covidcontacttracerapp-smart-zebra-ua.mybluemix.net/'
 this.__baseURL__ = 'http://0.0.0.0:8000/'
 this.__curlHandle__ = pycurl.Curl()
+logger = logging.getLogger(__name__)
 
 
 #  PURPOSE: Delcares the user to the server.
 #  INPUT: MAC address of user as a string
 #  RETURN: A secret key to be used in other requests as a string
-#  ERROR: returns 2 when a retry is needed (server error) and a 3 if the user is already initiated
+#  ERROR: returns 2 when a retry is needed (server error) and a 3 if the user is already initiated, return 4 for invalid MAC Address
 #  CATCH-ALL: Returns a 1 for other errors.
 def initSelf(MacAddrSelf):
     c = this.__curlHandle__
@@ -51,6 +53,8 @@ def initSelf(MacAddrSelf):
         #  Retry
         return 2
     elif code == 400:
+        return 4
+    elif code == 403:
         return 3  # Permission denied due to initiated
     else:
         #  Unknown Error
@@ -58,7 +62,7 @@ def initSelf(MacAddrSelf):
 
 
 #  PURPOSE: Reports the user as positive and the potential contacted persons.
-#  INPUT: MAC address of user(string), the secret key(string), and list of MAC Addresses (CSV string)
+#  INPUT: MAC address of user(string), the secret key(string), and list of MAC Addresses (CSV string). The CSV list cannot be empty.
 #  RETURN: 0 on success
 #  ERROR: returns 2 when a retry is needed (server error), return 3 for incorrect secret key, return 4 for empty/invalid CSV contacted list.
 #  CATCH-ALL: Returns a 1 for other errors.
@@ -245,15 +249,40 @@ def tests():
     print("initiating 2 users")
     secret1 = initSelf(self)
     secret2 = initSelf(person2)
-    print("testing secret key")
+    
+    print("\ntesting secret key")
     print(len(secret1)==56)
-    print("Mimicking normal behavior")
+
+    print("\nMimicking normal behavior")
     print(queryMyMacAddr(self,secret1)==0)
     print(positiveReport(self,secret1,others)==0)
     print(queryMyMacAddr(person2,secret2)==-1)
     print(negativeReport(self,secret1)==0)
     print(queryMyMacAddr(self,secret1)==0)
-    print("Removing users")
+
+    print("\nTrying invalid inputs")
+    print(initSelf("invalid input")==4)
+    print(queryMyMacAddr("invalid input",secret2)==4)
+    print(positiveReport(self,secret1,"invalid input")==4)
+    print(positiveReport("invalid input",secret1,others)==4)
+    print(negativeReport("invalid input",secret1)==4)
+    print(forgetUser("invalid input", secret1)==4)
+
+    print("\ntrying to create existing user")
+    print(initSelf(self)==3)
+
+    print("\ntrying invalid secret keys")
+    print(queryMyMacAddr(self,secret2)==3)
+    print(queryMyMacAddr(self,"not a key")==3)
+    print(positiveReport(self,secret2,others)==3)
+    print(positiveReport(self,"not a key",others)==3)
+    print(negativeReport(self,secret2)==3)
+    print(negativeReport(self,"not a key")==3)
+    print(forgetUser("4F:11:77:7A:5B:6A", secret1)==3)  #  Non-initiated user
+    print(forgetUser(self, secret2)==3)
+    print(forgetUser(self, "not a key")==3)
+
+    print("\nRemoving users")
     print(forgetUser(self, secret1)==0)
     print(forgetUser(person2, secret2)==0)
     freeResources()
