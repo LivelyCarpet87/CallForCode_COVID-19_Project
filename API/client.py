@@ -7,18 +7,35 @@ try:
     from io import BytesIO
 except ImportError:
     from StringIO import StringIO as BytesIO
+import logging
+import logging.handlers
+import os
 
 this = sys.modules[__name__]
-this.__buffer_obj__ = BytesIO()
-#this.__baseURL__ = 'https://covidcontacttracerapp-smart-zebra-ua.mybluemix.net/'
-this.__baseURL__ = 'http://0.0.0.0:8000/'
-this.__curlHandle__ = pycurl.Curl()
+
+
+def init(logFile,verbosityLevel):
+    if not os.path.isfile(logFile):
+        return False
+    this.__buffer_obj__ = BytesIO()
+    #this.__baseURL__ = 'https://covidcontacttracerapp-smart-zebra-ua.mybluemix.net/'
+    this.__baseURL__ = 'http://0.0.0.0:8000/'
+    this.__curlHandle__ = pycurl.Curl()
+    this.__logger__ = logging.getLogger(__name__)
+    rotHandle = logging.handlers.RotatingFileHandler(logFile, maxBytes=1024, backupCount=10)
+    if verbosityLevel is None:
+        rotHandle.setLevel(logging.WARNING)
+    else:
+        rotHandle.setLevel(verbosityLevel)
+    this.__logger__.addHandler(rotHandle)
+    return True
+
 
 
 #  PURPOSE: Delcares the user to the server.
 #  INPUT: MAC address of user as a string
 #  RETURN: A secret key to be used in other requests as a string
-#  ERROR: returns 2 when a retry is needed (server error) and a 3 if the user is already initiated
+#  ERROR: returns 2 when a retry is needed (server error) and a 3 if the user is already initiated, return 4 for invalid MAC Address
 #  CATCH-ALL: Returns a 1 for other errors.
 def initSelf(MacAddrSelf):
     c = this.__curlHandle__
@@ -30,6 +47,7 @@ def initSelf(MacAddrSelf):
     # Sets request method to POST,
     # Content-Type header to application/x-www-form-urlencoded
     # and data to send in request body.
+    this.__logger__.debug("initSelf:postfields=" + postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
     c.perform()
@@ -37,6 +55,7 @@ def initSelf(MacAddrSelf):
     code = c.getinfo(pycurl.HTTP_CODE)
     body = this.__buffer_obj__.getvalue().decode('utf-8')
     resetResources()
+    this.__logger__.debug("initSelf: Code = " + str(code) + " Msg: " + body)
     if "Initiated." not in body and code == 201:
         try:
             secretPattern = re.compile(r'(\S{56})')
@@ -46,19 +65,26 @@ def initSelf(MacAddrSelf):
         except KeyError:
             return 1
     if code == 201:
+        this.__logger__.debug("initSelf: Recieved key:"+secret+" extracted from: "+body)
         return secret
     elif code >= 500:
         #  Retry
+        this.__logger__.warning("initSelf:Server Error: " + str(code) + " msg: " + body)
         return 2
     elif code == 400:
+        this.__logger__.warning("initSelf:400 Error:msg: " + body)
+        return 4
+    elif code == 403:
+        this.__logger__.warning("initSelf:403 Error:msg: " + body)
         return 3  # Permission denied due to initiated
     else:
         #  Unknown Error
+        this.__logger__.error("initSelf:Unknown Error: " + str(code) + " msg: " + body)
         return 1
 
 
 #  PURPOSE: Reports the user as positive and the potential contacted persons.
-#  INPUT: MAC address of user(string), the secret key(string), and list of MAC Addresses (CSV string)
+#  INPUT: MAC address of user(string), the secret key(string), and list of MAC Addresses (CSV string). The CSV list cannot be empty.
 #  RETURN: 0 on success
 #  ERROR: returns 2 when a retry is needed (server error), return 3 for incorrect secret key, return 4 for empty/invalid CSV contacted list.
 #  CATCH-ALL: Returns a 1 for other errors.
@@ -74,6 +100,7 @@ def positiveReport(MacAddrSelf,secretKey,metAddrList):
     # Sets request method to POST,
     # Content-Type header to application/x-www-form-urlencoded
     # and data to send in request body.
+    this.__logger__.debug("positiveReport:postfields="+postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
     c.perform()
@@ -88,15 +115,17 @@ def positiveReport(MacAddrSelf,secretKey,metAddrList):
         return 0
     elif code >= 500:
         #  Retry
+        this.__logger__.warning("positiveReport:Server Error: " + str(code) + " msg: " + body)
         return 2
-    elif code == 403:
-        # bad secret key
-        return 3
     elif code == 400:
-        # no MAC Addresses
+        this.__logger__.warning("positiveReport:400 Error:msg: " + body)
         return 4
+    elif code == 403:
+        this.__logger__.warning("positiveReport:403 Error:msg: " + body)
+        return 3  # Permission denied due to initiated
     else:
-        #  Unknown Issue Occurred
+        #  Unknown Error
+        this.__logger__.error("positiveReport:Unknown Error: " + str(code) + " msg: " + body)
         return 1
 
 
@@ -116,6 +145,7 @@ def negativeReport(MacAddrSelf,secretKey):
     # Sets request method to POST,
     # Content-Type header to application/x-www-form-urlencoded
     # and data to send in request body.
+    this.__logger__.debug("negativeReport:postfields="+postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
     c.perform()
@@ -130,15 +160,17 @@ def negativeReport(MacAddrSelf,secretKey):
         return 0
     elif code >= 500:
         #  Retry
+        this.__logger__.warning("negativeReport:Server Error: " + str(code) + " msg: " + body)
         return 2
-    elif code == 403:
-        # invalid secret key
-        return 3
     elif code == 400:
-        # invalid input
+        this.__logger__.warning("negativeReport:400 Error:msg: " + body)
         return 4
+    elif code == 403:
+        this.__logger__.warning("negativeReport:403 Error:msg: " + body)
+        return 3  # Permission denied due to initiated
     else:
-        #  Unknown Issue Occurred
+        #  Unknown Error
+        this.__logger__.error("negativeReport:Unknown Error: " + str(code) + " msg: " + body)
         return 1
 
 
@@ -175,12 +207,17 @@ def queryMyMacAddr(self,secret):
         return 0
     elif code >= 500:
         #  Retry
+        this.__logger__.warning("queryMyMacAddr:Server Error: " + str(code) + " msg: " + body)
         return 2
-    elif code == 403:
-        return 3
     elif code == 400:
+        this.__logger__.warning("queryMyMacAddr:400 Error:msg: " + body)
         return 4
+    elif code == 403:
+        this.__logger__.warning("queryMyMacAddr:403 Error:msg: " + body)
+        return 3  # Permission denied due to initiated
     else:
+        #  Unknown Error
+        this.__logger__.error("queryMyMacAddr:Unknown Error: " + str(code) + " msg: " + body)
         return 1
 
 
@@ -197,6 +234,7 @@ def forgetUser(MacAddrSelf, secretKey):
     d['Secret'] = secretKey
     # Form data must be provided already urlencoded.
     postfields = json.dumps(d)
+    this.__logger__.debug("forgetUser:postfields="+postfields)
     # Sets request method to POST,
     # Content-Type header to application/x-www-form-urlencoded
     # and data to send in request body.
@@ -213,13 +251,17 @@ def forgetUser(MacAddrSelf, secretKey):
         return 0
     elif code >= 500:
         #  Retry
+        this.__logger__.warning("forgetUser:Server Error: " + str(code) + " msg: " + body)
         return 2
-    elif code == 403:
-        #  Unknown Issue Occurred
-        return 3
     elif code == 400:
+        this.__logger__.warning("forgetUser:400 Error:msg: " + body)
         return 4
+    elif code == 403:
+        this.__logger__.warning("forgetUser:403 Error:msg: " + body)
+        return 3  # Permission denied due to initiated
     else:
+        #  Unknown Error
+        this.__logger__.error("forgetUser:Unknown Error: " + str(code) + " msg: " + body)
         return 1
 
 
@@ -239,21 +281,49 @@ def freeResources():
 
 #  test function, do not call
 def tests():
+    print("initiating program")
+    print(init("logFile",None)==False)
+    print(init(os.getcwd()+os.sep+"tmp.log",5)==True)
     self = "FF:11:2E:7A:5B:6A"
     others = "4F:11:2E:7A:5B:6A, 4F:1A:2E:7A:5B:6A, 4F:11:77:7A:5B:6A"
     person2 = "4F:11:2E:7A:5B:6A"
-    print("initiating 2 users")
+    print("\ninitiating 2 users")
     secret1 = initSelf(self)
     secret2 = initSelf(person2)
-    print("testing secret key")
+
+    print("\ntesting secret key")
     print(len(secret1)==56)
-    print("Mimicking normal behavior")
+
+    print("\nMimicking normal behavior")
     print(queryMyMacAddr(self,secret1)==0)
     print(positiveReport(self,secret1,others)==0)
     print(queryMyMacAddr(person2,secret2)==-1)
     print(negativeReport(self,secret1)==0)
     print(queryMyMacAddr(self,secret1)==0)
-    print("Removing users")
+
+    print("\nTrying invalid inputs")
+    print(initSelf("invalid input")==4)
+    print(queryMyMacAddr("invalid input",secret2)==4)
+    print(positiveReport(self,secret1,"invalid input")==4)
+    print(positiveReport("invalid input",secret1,others)==4)
+    print(negativeReport("invalid input",secret1)==4)
+    print(forgetUser("invalid input", secret1)==4)
+
+    print("\ntrying to create existing user")
+    print(initSelf(self)==3)
+
+    print("\ntrying invalid secret keys")
+    print(queryMyMacAddr(self,secret2)==3)
+    print(queryMyMacAddr(self,"not a key")==3)
+    print(positiveReport(self,secret2,others)==3)
+    print(positiveReport(self,"not a key",others)==3)
+    print(negativeReport(self,secret2)==3)
+    print(negativeReport(self,"not a key")==3)
+    print(forgetUser("4F:11:77:7A:5B:6A", secret1)==3)  #  Non-initiated user
+    print(forgetUser(self, secret2)==3)
+    print(forgetUser(self, "not a key")==3)
+
+    print("\nRemoving users")
     print(forgetUser(self, secret1)==0)
     print(forgetUser(person2, secret2)==0)
     freeResources()
