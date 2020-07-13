@@ -45,7 +45,7 @@ def personExists(MAC_Addr):
         return False
     else:
         try:
-            if getState(MAC_Addr) != None:
+            if getSecretKey(MAC_Addr) != "":
                 return True
             else:
                 return False
