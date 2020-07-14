@@ -39,9 +39,9 @@ class storageUnit():
 
 
 
-class MyGrid(GridLayout):
+class HomePage(GridLayout):
     def __init__(self, **kwargs):
-        super(MyGrid, self).__init__(**kwargs)
+        super(HomePage, self).__init__(**kwargs)
 
         self.storage = storageUnit()
 
@@ -121,7 +121,8 @@ class MyGrid(GridLayout):
 
 class MyApp(App):
     def build(self):
-        return MyGrid()
+        print("hello its me this is the start of the program")
+        return HomePage()
 
 
 
