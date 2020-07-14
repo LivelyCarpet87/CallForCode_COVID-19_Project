@@ -10,7 +10,7 @@ import atexit
 
 import CustomCloudantModules as ccm
 
-isMacAddr = re.compile(r"([\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2})")
+isMacAddr = re.compile(r"([\da-fA-F]{2}:[\da-fA-F]{2}:[\da-fA-F]{2}:[\da-fA-F]{2}:[\da-fA-F]{2}:[\da-fA-F]{2})")
 isFloodAddr = re.compile("FF:FF:FF:FF:FF:FF",re.I)
 
 
