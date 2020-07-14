@@ -82,8 +82,24 @@ class MyGrid(GridLayout):
         macInitStr = result.stdout
 
         macInitStr = repr(macInitStr)
-        isMacAddr = re.compile(r"([\da-f|A-F]{1,2}:[\da-f|A-F]{1,2}:[\da-f|A-F]{1,2}:[\da-f|A-F]{1,2}:[\da-f|A-F]{1,2}:[\da-f|A-F]{1,2})")
-        macList = re.findall(isMacAddr,macInitStr)
+        isMacAddr = re.compile(r"([\da-fA-F]{1,2}:[\da-fA-F]{1,2}:[\da-fA-F]{1,2}:[\da-fA-F]{1,2}:[\da-fA-F]{1,2}:[\da-fA-F]{1,2})")
+        shortMacList = re.findall(isMacAddr,macInitStr)
+        isContractionStart = re.compile(r'^([\da-fA-F]):')
+        isContractionMid = re.compile(r':([\da-fA-F]):')
+        isContractionEnd = re.compile(r':([\da-fA-F])$')
+        macList = []
+        for mac in shortMacList:
+            if re.search(isContractionStart,mac) is not None:
+                digit = re.search(isContractionStart,mac).group(1)
+                mac = re.sub(isContractionStart,digit + "0:",mac)
+            if re.search(isContractionEnd,mac) is not None:
+                digit = re.search(isContractionEnd,mac).group(1)
+                mac = re.sub(isContractionEnd,":" + digit + "0",mac)
+            while re.search(isContractionMid,mac) is not None:
+                digit = re.search(isContractionMid,mac).group(1)
+                mac = re.sub(isContractionMid,":" + digit + "0:",mac)
+            macList.append(mac)
+
         """
         splitArr = macInitStr.split(" ")
         macList = []
