@@ -82,7 +82,7 @@ class MyGrid(GridLayout):
         macInitStr = result.stdout
 
         macInitStr = repr(macInitStr)
-        isMacAddr = re.compile(r"([\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2}:[\da-f|A-F]{2})")
+        isMacAddr = re.compile(r"([\da-f|A-F]{1,2}:[\da-f|A-F]{1,2}:[\da-f|A-F]{1,2}:[\da-f|A-F]{1,2}:[\da-f|A-F]{1,2}:[\da-f|A-F]{1,2})")
         macList = re.findall(isMacAddr,macInitStr)
         """
         splitArr = macInitStr.split(" ")
