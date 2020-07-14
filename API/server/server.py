@@ -55,7 +55,7 @@ def receivePositiveReport():
 		return 'Bad MAC Address!', 400
 	valid = verifySecret(self[0],secret)
 	if valid:
-		markPositive(metAddrList, self[0])
+		markPositive(metAddrList, self)
 		return jsonify(
 			msg = "Get well soon. "
 		), status.HTTP_201_CREATED
@@ -75,7 +75,7 @@ def receiveQueryMyMacAddr():
 		return 'Bad MAC Address!', 400
 	if not verifySecret(addrList[0],secret):
 		return 'Bad Request Key', 403
-	state = queryAddr(addrList[0],secret)
+	state = queryAddr(addrList)
 	if state == 1:
 		return jsonify(
 			 atRisk = True
@@ -138,7 +138,7 @@ def initNewUser(selfList):
 		if not success:
 			raise cloudant.error.CloudantDatabaseException
 	else: #person, exists, but may not be initiated. This only occurs if person contacted a person marked positive
-		if ccm.getState(addr) == 3 and ccm.getSecretKey(addr) == "":
+		if (ccm.getState(addr) == 3 or cmm.getState(addr) == 2 or cmm.getState(addr) == 1) and ccm.getSecretKey(addr) == "":
 			secret = hashlib.sha224((addr+str(os.urandom(128))).encode('utf-8')).hexdigest()
 			success = ccm.changeSecretKey(addr,secret)
 			if not success:
@@ -185,6 +185,28 @@ def markPositive(addrList, self):
 				else:
 					attempt = attempt + 1
 
+	for positive in self:
+		if ccm.personExists(positive):  # Change state if person exists
+			# retry the write to the database up to 10 times if it fails
+			attempt = 1
+			while attempt <= 10:
+				success = ccm.changeState(positive,2)
+				time.sleep(1)  # Delay to prevent reaching free tier IBM Cloudant limits
+				if success:
+					break
+				else:
+					attempt = attempt + 1
+		else:
+			# if person not exist, create an unintiated Person with state
+			attempt = 1
+			while attempt <= 10:
+				success = ccm.addPerson(positive,2,"")
+				time.sleep(1)  # Delay to prevent reaching free tier IBM Cloudant limits
+				if success:
+					break
+				else:
+					attempt = attempt + 1
+
 
 def markNegative(negative,secret):
 	if not verifySecret(negative,secret):  # Do nothing if secret key does not match
@@ -198,11 +220,10 @@ def deleteUser(user, secret):
 	ccm.removePerson(user)
 
 
-def queryAddr(addr, secret):
-	if not verifySecret(addr,secret):  # Do nothing if secret key does not match
-		return -1  # return 403 forbidden incorrect secret or user not exist
-	if ccm.getState(addr) == 3:
-		return 1
+def queryAddr(addrList):
+	for addr in addrList:
+		if ccm.getState(addr) == 3 or  ccm.getState(addr) == 2:
+			return 1
 	return 0
 
 

@@ -33,7 +33,7 @@ def init(logFile,verbosityLevel):
 
 
 #  PURPOSE: Delcares the user to the server.
-#  INPUT: MAC address of user as a string
+#  INPUT: True MAC address of user as a string
 #  RETURN: A secret key to be used in other requests as a string
 #  ERROR: returns 2 when a retry is needed (server error) and a 3 if the user is already initiated, return 4 for invalid MAC Address
 #  CATCH-ALL: Returns a 1 for other errors.
@@ -84,7 +84,7 @@ def initSelf(MacAddrSelf):
 
 
 #  PURPOSE: Reports the user as positive and the potential contacted persons.
-#  INPUT: MAC address of user(string), the secret key(string), and list of MAC Addresses (CSV string). The CSV list cannot be empty.
+#  INPUT: True MAC address of user(string), the secret key(string), and list of MAC Addresses (CSV string). The CSV list cannot be empty.
 #  RETURN: 0 on success
 #  ERROR: returns 2 when a retry is needed (server error), return 3 for incorrect secret key, return 4 for empty/invalid CSV contacted list.
 #  CATCH-ALL: Returns a 1 for other errors.
@@ -130,7 +130,7 @@ def positiveReport(MacAddrSelf,secretKey,metAddrList):
 
 
 #  PURPOSE: Reports the user as negative.
-#  INPUT: MAC address of user(string), the secret key(string), and list of MAC Addresses (CSV string)
+#  INPUT: True MAC address of user(string), the secret key(string)
 #  RETURN: 0 on success
 #  ERROR: returns 2 when a retry is needed (server error), return 3 for incorrect secret key, return 4 for empty/invalid MAC addr of self.
 #  CATCH-ALL: Returns a 1 for other errors.
@@ -175,7 +175,8 @@ def negativeReport(MacAddrSelf,secretKey):
 
 
 #  PURPOSE: Gets the state of the user from the server.
-#  INPUT: MAC address of user(string), the secret key(string), and list of MAC Addresses (CSV string)
+#  INPUT: MAC address of user(string), the secret key(string)
+#  INPUT (Android 10 Only): A string of MAC addresses with the user's true MAC Address first as a CSV string, the user's secret key
 #  RETURN: -1 if user has contacted someone with the virus, 0 if the user has not
 #  ERROR: returns 2 when a retry is needed (server error), return 3 for incorrect secret key, return 4 for empty/invalid MAC addr of self.
 #  CATCH-ALL: Returns a 1 for other errors.
@@ -328,4 +329,4 @@ def tests():
     print(forgetUser(person2, secret2)==0)
     freeResources()
 
-tests()
+#tests()
