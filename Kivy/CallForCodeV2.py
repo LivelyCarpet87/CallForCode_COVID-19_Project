@@ -82,12 +82,14 @@ class HomePage(GridLayout):
     def tryGetMac():
 
         fails = 0
-        if os.path.isfile(os.sep+"proc"+os.sep+"net"+os.sep+"arp") \
-        and os.access(os.sep+"proc"+os.sep+"net"+os.sep+"arp", os.R_OK)
-            f=open(os.sep+"proc"+os.sep+"net"+os.sep+"arp", "r")
-            result = f.read()
-            self.supported = True  #  Documents whether our mac address collection method is supported
-            return result
+        if os.path.isfile(os.sep+"proc"+os.sep+"net"+os.sep+"arp")
+            if os.access(os.sep+"proc"+os.sep+"net"+os.sep+"arp", os.R_OK)
+                f=open(os.sep+"proc"+os.sep+"net"+os.sep+"arp", "r")
+                result = f.read()
+                self.supported = True  #  Documents whether our mac address collection method is supported
+                return result
+            else:
+                fails = fails + 1
         else:
             fails = fails + 1
         try:
