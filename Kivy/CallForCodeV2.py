@@ -45,6 +45,8 @@ class HomePage(GridLayout):
 
         self.storage = storageUnit()
 
+        self.supported  #  Documents whether our mac address collection method is supported
+
         self.cols = 1
 
         self.smallGrid = GridLayout()
@@ -76,8 +78,32 @@ class HomePage(GridLayout):
         for i in recentTen:
             returnStr += repr(i)+ "\n"
         return returnStr
+
+    def tryGetMac():
+
+        fails = 0
+        if os.path.isfile(os.sep+"proc"+os.sep+"net"+os.sep+"arp"):
+            if os.access(os.sep+"proc"+os.sep+"net"+os.sep+"arp", os.R_OK):
+                f=open(os.sep+"proc"+os.sep+"net"+os.sep+"arp", "r")
+                result = f.read()
+                self.supported = True  #  Documents whether our mac address collection method is supported
+                return result
+            else:
+                fails = fails + 1
+        else:
+            fails = fails + 1
+        try:
+            result = subprocess.run(['arp', '-a'], stdout=subprocess.PIPE)
+            self.supported = True #  Documents whether our mac address collection method is supported
+            return result
+        except subprocess.CalledProcessError:
+            fails = fails + 1
+            pass
+        self.supported = False #  Documents whether our mac address collection method is supported
+        return ""
+
     def getMac(self):
-        result = subprocess.run(['arp', '-a'], stdout=subprocess.PIPE)
+        result = tryGetMac()
 
         macInitStr = result.stdout
 
