@@ -1,0 +1,138 @@
+WindowManager:
+    HomePage:
+    SideBarPage:
+    AboutUsPage:
+    QuitAppPage:
+    SendDataPage
+    SeeDataPage:
+    
+
+<HomePage>:
+    name: "home"
+    GridLayout:
+        cols: 1
+        
+        Button:
+            text: "Options"
+            on_release:
+                app.root.current = "sidebar"
+                root.manager.transition.direction = "left"
+
+<SideBarPage>:
+    name: "sidebar"
+    GridLayout:
+        cols: 1
+        
+        Button:
+            text: "Home"
+            on_release:
+                app.root.current = "home"
+                root.manager.transition.direction = "right"
+        
+        Button:
+            text: "About Us"
+            on_release:
+                app.root.current = "aboutus"
+                root.manager.transition.direction = "left"
+                
+        Button:
+            text: "My MAC Addresses"
+            on_release:
+                app.root.current = "seedata"
+                root.manager.transition.direction = "left"
+                
+        Button:
+            text: "Delete Data & Quit"
+            on_release:
+                app.root.current = "quitapp"
+                root.manager.transition.direction = "left"
+        
+        Button:
+            text: "I'm Infected"
+            on_release:
+                app.root.current = "senddata"
+                root.manager.transition.direction = "left"
+                
+    
+
+
+<AboutUsPage>:
+    name: "aboutus"
+    
+    GridLayout:
+        cols: 1
+        
+        Button:
+            text: "Options"
+            on_release:
+                app.root.current = "sidebar"
+                root.manager.transition.direction = "right"
+        Button:
+            text: "Our team is hella cool blah"
+    
+
+
+<QuitAppPage>:
+    name: "quitapp"
+    GridLayout:
+        cols: 1
+        
+        Button:
+            text: "Options"
+            on_release:
+                app.root.current = "sidebar"
+                root.manager.transition.direction = "right"
+        
+        Button:
+            text: "Delete Data"
+            on_release:
+            
+                app.root.current = "home"
+                root.manager.transition.direction = "right"
+        
+        Button:
+            text: "Quit"
+            on_release:
+                app.root.current = "home"
+                root.manager.transition.direction = "right"
+
+<SendDataPage>:
+    name: "senddata"
+    GridLayout:
+        cols: 1
+        
+        Button:
+            text: "Options"
+            on_release:
+                app.root.current = "sidebar"
+                root.manager.transition.direction = "right"
+        
+        Button:
+            text: "SendData"
+            on_release:
+                app.root.current = "home"
+                root.manager.transition.direction = "right"
+        
+
+<SeeDataPage>:
+    name: "seedata"
+    
+    GridLayout:
+        cols: 1
+        
+        
+        Button:
+            text: "Options"
+            on_release:
+                app.root.current = "sidebar"
+                root.manager.transition.direction = "right"
+                
+        Button:
+            text: "Date/Time"
+            
+        
+        Button:
+            text: "MacAddress"
+            
+            
+        
