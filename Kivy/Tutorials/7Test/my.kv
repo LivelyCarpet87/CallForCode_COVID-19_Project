@@ -9,14 +9,15 @@ WindowManager:
 
 <HomePage>:
     name: "home"
-    GridLayout:
-        cols: 1
-        
-        Button:
-            text: "Options"
-            on_release:
-                app.root.current = "sidebar"
-                root.manager.transition.direction = "left"
+    options: optionButton
+    Button:
+        id: optionButton
+        pos_hint: {"x": 0, "y": 1}
+        size_hint: 0.3, 0.15
+        text: "Options"
+        on_release:
+            app.root.current = "sidebar"
+            root.manager.transition.direction = "left"
 
 <SideBarPage>:
     name: "sidebar"
