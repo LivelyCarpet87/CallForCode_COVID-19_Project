@@ -19,7 +19,7 @@ WindowManager:
     Button:
         pos_hint: {"center_x":0.5, "center_y": 0.8 }
         size_hint: 0.7, 0.2
-        text: "CoronaCatcher (Click me right now to recalculate your mac address and add to your list)"
+        text: "CoronaCatcher (Click to check mac)"
         on_release:
             root.calculateMac()
     Label:
@@ -112,17 +112,14 @@ WindowManager:
         size_hint: 0.7, 0.12
         text: "Delete Data"
         on_release:
-            
-            app.root.current = "home"
-            root.manager.transition.direction = "right"
+            root.deleteDataButtonClicked()
         
     Button:
         pos_hint: {"center_x": 0.5, "center_y": 0.55}
         size_hint: 0.7, 0.12
         text: "Quit"
         on_release:
-            app.root.current = "home"
-            root.manager.transition.direction = "right"
+            root.quitButtonClicked()
 
 <SendDataPage>:
     name: "senddata"
@@ -139,8 +136,7 @@ WindowManager:
         size_hint: 0.7, 0.12
         text: "SendData"
         on_release:
-            app.root.current = "home"
-            root.manager.transition.direction = "right"
+            root.sendDataButtonClicked()
         
 
 <SeeDataPage>:
@@ -153,17 +149,15 @@ WindowManager:
         on_release:
             app.root.current = "sidebar"
             root.manager.transition.direction = "right"
+    
+    Button:
+        pos_hint: {"right": 0.95, "top": 0.97}
+        size_hint: 0.2, 0.05
+        text: "Renew"
+        on_release:
+            root.renewRecentTen()
                 
-    Button:
-        pos_hint: {"center_x": 0.5, "center_y": 0.7}
-        size_hint: 0.7, 0.12
-        text: "Date/Time"
-            
-        
-    Button:
-        pos_hint: {"center_x": 0.5, "center_y": 0.55}
-        size_hint: 0.7, 0.12
-        text: "MacAddress"
+    
             
             
         
