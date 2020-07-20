@@ -45,7 +45,7 @@ class storageUnit():
         print("BEFORE PRINT ________")
         print(self.store.get("prevNetwork")["value"])
         print("AFTER PRINT _________")
-        
+
 #Adds a unknown / new mac address that was not on the previous network into the json file
     def addEntry(self, macAddress, time):
         if macAddress in self.store.get("macDict")["value"]:
@@ -112,7 +112,7 @@ class GetMacAdd():
     def getMac(self):
         result = self.tryGetMac()
 
-        macInitStr = result.stdout
+        macInitStr = result
 
         macInitStr = repr(macInitStr)
         isMacAddr = re.compile(r"([\da-fA-F]{1,2}:[\da-fA-F]{1,2}:[\da-fA-F]{1,2}:[\da-fA-F]{1,2}:[\da-fA-F]{1,2}:[\da-fA-F]{1,2})")
@@ -149,7 +149,7 @@ class GetMacAdd():
         else:
             for macAdd in diffArr:
                 self.storage.addEntry(macAdd, str(datetime.datetime.now()))
-            
+
             self.storage.store.put("prevNetwork", value = dict.fromkeys(compareSet, 0))
             return self.getString(self.storage.store.get("recentTen")["value"])
 
@@ -172,14 +172,14 @@ class HomePage(Screen, Widget):
 #macClass variable is just used as a reference to be able to call the getMac class
         self.macClass = GetMacAdd()
         self.actualMac = self.macClass.getMac()
-        
-    
-    
+
+
+
 #This method is used when we click the button to check our current network mac
     def calculateMac(self):
         self.actualMac = self.macClass.getMac()
         return self.actualMac
-    
+
     #This calculates the offset accordingly (topLeftH and topLeftW are both in terms of proportions)
     def findCoordinates(self, percentage, topLeftWidth, topLeftHeight):
         smallDim = min(Window.size)
@@ -189,7 +189,7 @@ class HomePage(Screen, Widget):
         print(xCoor / Window.size[1])
         print(yCoor / Window.size[0])
         return (xCoor / Window.size[1], yCoor / Window.size[0])
-    
+
     pass
 
 #SideBar class page (reference my.kv file)
@@ -197,7 +197,7 @@ class SideBarPage(Screen):
     pass
 
 #AboutUs class page (reference my.kv file)
-class AboutUsPage(Screen):      
+class AboutUsPage(Screen):
     pass
 
 #QuitApp class page (reference my.kv file)
@@ -227,10 +227,10 @@ class SeeDataPage(Screen):
 #Creates the grid used to display the information
         self.table = GridLayout()
         self.table.cols = 2
-        
-        
+
+
         print("BEFORE ASSIGN VALUES")
-#Initiates the table by first creating a label into the self.data array, and 
+#Initiates the table by first creating a label into the self.data array, and
 #then adding them to the grid
         for i in range(len(self.recentTen)):
             self.data[2 * i] = Label(text = self.recentTen[i][1])
@@ -253,7 +253,7 @@ class WindowManager(ScreenManager):
     pass
 
 kv = Builder.load_file("my.kv")
-    
+
 class MyMainApp(App):
     def build(self):
         print(Window.size)
@@ -267,7 +267,7 @@ class MyMainApp(App):
 #            store.put("recentTen", value = list())
  #           store.put("prevNetwork", value = dict())
         return kv
-    
+
 
 if __name__ == "__main__":
     print("ENTER MOST OUTSIDE")
