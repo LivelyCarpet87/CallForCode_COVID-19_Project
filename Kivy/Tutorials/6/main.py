@@ -10,7 +10,7 @@ class Touch(Widget):
         super(Touch, self).__init__(**kwargs)
         
         with self.canvas:
-            Line(points = (20, 30, 400, 500, 60, 500))
+            #Line(points = (20, 30, 400, 500, 60, 500))
             Color(1, 0, 0, 0.5, mode="rgba")
             self.rect = Rectangle(pos = (0, 0), size=(50, 50))
 

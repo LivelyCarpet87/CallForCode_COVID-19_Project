@@ -10,6 +10,7 @@ from kivy.properties import ObjectProperty
 from kivy.graphics import Rectangle
 from kivy.graphics import Color
 from kivy.storage.jsonstore import JsonStore
+import client.py
 
 
 #Changes the window size
@@ -162,6 +163,7 @@ class HomePage(Screen, Widget):
 #Checks if there is a file. If there is not, initiate all 4 necessary parts
         if (not self.store.exists('numEntries')):
             print("enter")
+            
             self.store.put("numEntries", value = 0)
             self.store.put("macDict", value = dict())
             self.store.put("recentTen", value = list())
@@ -244,7 +246,6 @@ class SeeDataPage(Screen):
         for i in range(len(self.recentTen)):
             self.data[2 * i].text = self.recentTen[i][1]
             self.data[2 * i + 1].text = self.recentTen[i][0]
-
     pass
 
 #Represent the transitions between the windows above

@@ -7,7 +7,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty
 from kivy.graphics import Rectangle
 from kivy.graphics import Color
-
+from kivy.storage.jsonstore import JsonStore
 
 
 #Changes the window size
@@ -31,6 +31,7 @@ import re
 class storageUnit():
 
     def __init__(self):
+        store = JsonStore('local.json')
         self.numEntries = 0
         self.macDict = dict() #Key corresponding to list
         self.recentTen = []
@@ -183,6 +184,11 @@ class MyMainApp(App):
     def build(self):
         print(Window.size)
         print(type(Window.size))
+        store = JsonStore('local.json')
+        if (not store.exists("numEntries")):
+            store.put("numEntries", value = 0)
+            store.put("macDict", value = dict())
+            store.put("recentTen", value = list())
         return kv
     
 
