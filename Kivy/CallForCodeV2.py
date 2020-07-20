@@ -79,7 +79,7 @@ class HomePage(GridLayout):
             returnStr += repr(i)+ "\n"
         return returnStr
 
-    def tryGetMac():
+    def tryGetMac(self):
 
         fails = 0
         if os.path.isfile(os.sep+"proc"+os.sep+"net"+os.sep+"arp"):
