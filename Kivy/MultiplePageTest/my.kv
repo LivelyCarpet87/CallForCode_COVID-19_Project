@@ -1,0 +1,31 @@
+WindowManager:
+    MainWindow:
+    SecondWindow:
+    
+<MainWindow>:
+    name: "main"
+    
+    GridLayout:
+        cols: 1
+        GridLayout:
+            cols: 2
+            
+            Label:
+                text: "PassWord: "
+                
+            textInput:
+                id: passw
+                multiline: False
+        
+        Button:
+            text: "Submit"
+            on_release: app.root.current = "second"
+                
+
+<SecondWindow>:
+    name: "second"
+    
+    Button:
+        text: "Go back"
+        on_release:
+            app.root.current = "main"
