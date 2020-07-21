@@ -25,11 +25,16 @@ WindowManager:
     Label:
         pos_hint: {"center_x": 0.5, "center_y": 0.6}
         size_hint: 0.7, 0.1
-        text: root.actualMac
+        text: root.status
     Label:
         pos_hint: {"center_x": 0.5, "center_y": 0.5}
         size_hint: 0.7, 0.1
+        text: root.actualMac
+    Label:
+        pos_hint: {"center_x": 0.5, "center_y": 0.4}
+        size_hint: 0.7, 0.1
         text: "PlaceHolder for YOUR NETWORK"
+    
         
 
 <SideBarPage>:
@@ -134,9 +139,15 @@ WindowManager:
     Button:
         pos_hint: {"center_x": 0.5, "center_y": 0.7}
         size_hint: 0.7, 0.12
-        text: "SendData"
+        text: "I'm Infected"
         on_release:
-            root.sendDataButtonClicked()
+            root.imInfectedButtonClicked()
+    Button:
+        pos_hint: {"center_x": 0.5, "center_y": 0.55}
+        size_hint: 0.7, 0.12
+        text: "I just recovered"
+        on_release:
+            root.iJustRecoveredButtonClicked()
         
 
 <SeeDataPage>:
