@@ -116,7 +116,9 @@ class GetMacAdd():
                     mac = re.sub(isContractionMid,":" + digit + "0:",mac)
                 if mac != "00:00:00:00:00:00":
                     selfMac.append(mac)
-            except KeyError, ValueError:
+            except KeyError:
+                pass
+            except ValueError:
                 pass
 
         if selfMac == []:
