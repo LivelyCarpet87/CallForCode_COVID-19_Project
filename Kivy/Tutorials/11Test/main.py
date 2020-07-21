@@ -122,7 +122,7 @@ class GetMacAdd():
                 pass
 
         if selfMac == []:
-            raise OSError, "The system does not seem to have a valid MAC"
+            raise OSError
         else:
             return selfMac
 
