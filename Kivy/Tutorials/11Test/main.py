@@ -204,15 +204,15 @@ class HomePage(Screen, Widget):
         print("coronaCatcherButton clicked")
         returnVal = queryMyMacAddr(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
         if (returnVal == -1):
-            self.status = "Checked by " + datetime.datetime.now() + ", you have contacted someone with the virus. Please quarantine"
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", you have contacted someone with the virus. Please quarantine"
         elif (returnVal == 0):
-            self.status = "Checked by " + datetime.datetime.now() + ", you are still safe!"
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", you are still safe!"
         elif (returnVal == 2):
-            self.status = "Server Error, please quit the app and retry (2)"
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Server Error, please quit the app and retry (2)"
         elif (returnVal == 3):
-            self.status = "Incorrect secret key, you're kinda screwed (3)"
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Incorrect secret key, you're kinda screwed (3)"
         elif (returnVal == 4):
-            self.status = "Invalid mac address, you're kinda screwed (4)"
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Invalid mac address, you're kinda screwed (4)"
         else:
             self.status = "1 returned"
 
@@ -245,10 +245,27 @@ class AboutUsPage(Screen):
 
 #QuitApp class page (reference my.kv file)
 class QuitAppPage(Screen):
-    def deleteDataButtonClicked(self):
+    def __init__(self, **kwargs):
+        super(QuitAppPage, self).__init__(**kwargs)
+        print("ENTER QuitApp INIT")
+        self.store = JsonStore('local.json')
+        self.status = "Normal"
+    def deleteDataAndQuitButtonClicked(self):
+        
         print("DeleteData button Clicked")
-    def quitButtonClicked(self):
-        print("Quit button clicked")
+        returnValue = forgetUser(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
+        if (returnValue == 0):
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Sucess! You may quit the app"
+        elif (returnValue == 2):
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Server Error (2)"
+        elif (returnValue == 3):
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", incorrect secret key (3)"
+        elif (returnValue == 4):
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", invalid mac addr of self (4)"
+        elif (returnValue == 1):
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", 1 is returned (1)"
+        else:
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", server returned unknown command : " + str(returnValue)
     pass
 
 #SendData class page (reference my.kv file)
@@ -269,26 +286,20 @@ class SendDataPage(Screen):
         print("imInfected button clicked")
         returnVal = positiveReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"], self.getCSVString())
         if (returnVal == 2):
-            tempBut = Button(text = "Retry is needed(server error). Restart app and try again (2)", font_size = 40)
-            self.add_widget(tempBut)
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Retry is needed(server error). Restart app and try again (2)"
         elif (returnVal == 3):
-            tempBut = Button(text = "Incorrect Secret Key. Restart app and try again (3)", font_size = 40)
-            self.add_widget(tempBut)
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Incorrect Secret Key. Restart app and try again (3)"
         elif (returnVal == 4):
-            tempBut = Button(text = "Invalid CSV. Restart app and contact admin", font_size = 40)
-            self.add_widget(tempBut)
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Invalid CSV. Restart app and contact admin"
     def iJustRecoveredButtonClicked(self):
         print("iJustRecovered button clicked")
         returnVal = negativeReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
         if (returnVal == 2):
-            tempBut = Button(text = "Retry is needed(server error). Restart app and try again (2)", font_size = 40)
-            self.add_widget(tempBut)
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Retry is needed(server error). Restart app and try again (2)"
         elif (returnVal == 3):
-            tempBut = Button(text = "Incorrect Secret Key. Restart app and try again (3)", font_size = 40)
-            self.add_widget(tempBut)
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Incorrect Secret Key. Restart app and try again (3)"
         elif (returnVal == 4):
-            tempBut = Button(text = "Invalid MAC Address of self. Restart app and contact admin (4)", font_size = 40)
-            self.add_widget(tempBut)
+            self.status = "Checked by " + str(datetime.datetime.now()) + ", Invalid MAC Address of self. Restart app and contact admin (4)"
     pass
 
 #SeeDataPage class page (reference my.kv file)
@@ -349,4 +360,5 @@ class MyMainApp(App):
 if __name__ == "__main__":
     print("ENTER MOST OUTSIDE")
     MyMainApp().run()
+    freeResources()
     exit()

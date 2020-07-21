@@ -25,15 +25,15 @@ WindowManager:
     Label:
         pos_hint: {"center_x": 0.5, "center_y": 0.6}
         size_hint: 0.7, 0.1
-        text: root.status
+        text: root.actualMac
     Label:
         pos_hint: {"center_x": 0.5, "center_y": 0.5}
         size_hint: 0.7, 0.1
-        text: root.actualMac
-    Label:
-        pos_hint: {"center_x": 0.5, "center_y": 0.4}
-        size_hint: 0.7, 0.1
         text: "PlaceHolder for YOUR NETWORK"
+    Label:
+        pos_hint: {"center_x": 0.5, "bottom": 0}
+        size_hint: 1, 0.05
+        text: root.status
     
         
 
@@ -117,14 +117,13 @@ WindowManager:
         size_hint: 0.7, 0.12
         text: "Delete Data"
         on_release:
-            root.deleteDataButtonClicked()
+            root.deleteDataAndQuitButtonClicked()
+    Label:
+        pos_hint: {"center_x": 0.5, "bottom": 0}
+        size_hint: 1, 0.05
+        text: root.status
         
-    Button:
-        pos_hint: {"center_x": 0.5, "center_y": 0.55}
-        size_hint: 0.7, 0.12
-        text: "Quit"
-        on_release:
-            root.quitButtonClicked()
+
 
 <SendDataPage>:
     name: "senddata"
@@ -148,6 +147,10 @@ WindowManager:
         text: "I just recovered"
         on_release:
             root.iJustRecoveredButtonClicked()
+    Label:
+        pos_hint: {"center_x": 0.5, "bottom": 0}
+        size_hint: 1, 0.05
+        text: root.status
         
 
 <SeeDataPage>:
