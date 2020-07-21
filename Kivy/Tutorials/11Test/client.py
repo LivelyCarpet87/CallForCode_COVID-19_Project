@@ -304,7 +304,7 @@ def tests():
     print(positiveReport(self,secret1,others)==0)
     print(queryMyMacAddr(person2,secret2)==-1)
     print(negativeReport(self,secret1)==0)
-    print(queryMyMacAddr(self,secret1)==0)
+    print(queryMyMacAddr(self,secret1)==5)
 
     print("\nTrying invalid inputs")
     print(initSelf("invalid input")==4)
