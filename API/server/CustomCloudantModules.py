@@ -128,8 +128,11 @@ def getTimeOfLastAccess(MAC_Addr):
     if Document(myDatabase, MAC_Addr).exists():
         with Document(myDatabase, MAC_Addr) as document:
             document.fetch()
-            strTime = document['TimeOfLastAccess']
-            time = datetime.datetime. strptime(strTime, '%Y-%m-%d_%H:%M:%S.%f')
+            if 'TimeOfLastAccess' in document:
+                strTime = document['TimeOfLastAccess']
+                time = datetime.datetime. strptime(strTime, '%Y-%m-%d_%H:%M:%S.%f')
+            else:
+                time = datetime.datetime.fromisoformat('2011-11-04 00:05:23.283')
             return time
     else:
         return None

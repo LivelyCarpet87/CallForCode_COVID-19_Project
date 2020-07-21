@@ -1,5 +1,5 @@
 ---
 applications:
- - name: CoviContactTracer
+ - name: CovidContactTracer
    random-route: true
-   memory: 128M
+   memory: 256M

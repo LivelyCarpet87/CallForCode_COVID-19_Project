@@ -138,7 +138,7 @@ def forgetSelf():
 def initNewUser(selfList):
 	addr = selfList[0]
 	secret = ""
-	time = datetime.date(2013, 8, 1)
+	time = datetime.datetime.fromisoformat('2011-11-04 00:05:23.283')
 	if not ccm.personExists(addr):
 		secret = hashlib.sha224((addr+str(os.urandom(128))).encode('utf-8')).hexdigest()
 		success = ccm.addPerson(addr,4,secret,time)  # States: 1. Recovered, 2. Positive, 3. Contacted, 4. Neutral
@@ -186,7 +186,7 @@ def markPositive(addrList, self):
 			# if person not exist, create an unintiated Person with state
 			attempt = 1
 			while attempt <= 10:
-				success = ccm.addPerson(positive,3,"",datetime.date(2013, 8, 1))
+				success = ccm.addPerson(positive,3,"",datetime.datetime.fromisoformat('2011-11-04 00:05:23.283'))
 				time.sleep(1)  # Delay to prevent reaching free tier IBM Cloudant limits
 				if success:
 					break
@@ -208,7 +208,7 @@ def markPositive(addrList, self):
 			# if person not exist, create an unintiated Person with state
 			attempt = 1
 			while attempt <= 10:
-				success = ccm.addPerson(positive,2,"",datetime.date(2013, 8, 1))
+				success = ccm.addPerson(positive,2,"",datetime.datetime.fromisoformat('2011-11-04 00:05:23.283'))
 				time.sleep(1)  # Delay to prevent reaching free tier IBM Cloudant limits
 				if success:
 					break
@@ -248,7 +248,9 @@ def passRateLimit(macAddr):
 	currentTime = datetime.datetime.now()
 	lastAccess = ccm.getTimeOfLastAccess(macAddr)
 	allowedTime = lastAccess + datetime.timedelta(hours=8)
-	if currentTime > allowedTime:
+	print(currentTime)
+	print(allowedTime)
+	if allowedTime < currentTime:
 		return True
 	else:
 		return False
