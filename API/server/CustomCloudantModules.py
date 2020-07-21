@@ -6,18 +6,7 @@ from cloudant.result import Result, ResultByKey
 import json
 import sys
 import datetime
-"""
-{
-  "apikey": "",
-  "host": "9737075a-fd38-42ba-8091-ccb54ba3e50c-bluemix.cloudantnosqldb.appdomain.cloud",
-  "iam_apikey_description": "Auto-generated for key 750e4289-bdbe-41e1-b2ef-fadcda1691e2",
-  "iam_apikey_name": "BackendServer",
-  "iam_role_crn": "crn:v1:bluemix:public:iam::::serviceRole:Manager",
-  "iam_serviceid_crn": "crn:v1:bluemix:public:iam-identity::a/91c3c59ac5a44e3c82e753a0f6c356da::serviceid:ServiceId-7e88976c-7e9e-4984-8e9b-b30d72df8b85",
-  "url": "https://9737075a-fd38-42ba-8091-ccb54ba3e50c-bluemix.cloudantnosqldb.appdomain.cloud",
-  "username": ""
-}
-"""
+
 # Useful variables
 this = sys.modules[__name__]
 this.__username__ = ""
