@@ -147,8 +147,9 @@ def initNewUser(selfList):
 	else: #person, exists, but may not be initiated. This only occurs if person contacted a person marked positive
 		if (ccm.getState(addr) == 3 or ccm.getState(addr) == 2 or ccm.getState(addr) == 1) and ccm.getSecretKey(addr) == "":
 			secret = hashlib.sha224((addr+str(os.urandom(128))).encode('utf-8')).hexdigest()
-			success = ccm.changeSecretKey(addr,secret)
-			if not success:
+			success1 = ccm.changeSecretKey(addr,secret)
+			success2 = ccm.changeTimeOfLastAccess(addr,time)
+			if not success1 or not success2:
 				raise cloudant.error.CloudantDatabaseException
 	return secret
 
@@ -266,4 +267,4 @@ def shutdown():
 
 port = int(os.getenv('PORT', 8000))
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=port, debug=False)
+	app.run(host='0.0.0.0', port=port, debug=False, ssl_context='adhoc')

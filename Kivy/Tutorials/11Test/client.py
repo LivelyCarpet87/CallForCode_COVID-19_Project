@@ -19,7 +19,7 @@ def init(logFile,verbosityLevel):
         return False
     this.__buffer_obj__ = BytesIO()
     #this.__baseURL__ = 'https://covidcontacttracerapp-smart-zebra-ua.mybluemix.net/'
-    this.__baseURL__ = 'http://0.0.0.0:8000/'
+    this.__baseURL__ = 'https://covidcontacttrace.ngrok.io/'
     this.__curlHandle__ = pycurl.Curl()
     this.__logger__ = logging.getLogger(__name__)
     rotHandle = logging.handlers.RotatingFileHandler(logFile, maxBytes=10485760, backupCount=10)
@@ -55,7 +55,7 @@ def initSelf(MacAddrSelf):
     code = c.getinfo(pycurl.HTTP_CODE)
     body = this.__buffer_obj__.getvalue().decode('utf-8')
     resetResources()
-    this.__logger__.debug("initSelf: Code = " + str(code) + " Msg: " + body)
+    this.__logger__.info("initSelf: Code = " + str(code) + " Msg: " + body)
     if "Initiated." not in body and code == 201:
         try:
             secretPattern = re.compile(r'(\S{56})')
@@ -181,7 +181,7 @@ def negativeReport(MacAddrSelf,secretKey):
 #  INPUT: MAC address of user(string), the secret key(string)
 #  INPUT (Android 10 Only): A string of MAC addresses with the user's true MAC Address first as a CSV string, the user's secret key
 #  RETURN: -1 if user has contacted someone with the virus, 0 if the user has not
-#  ERROR: returns 2 when a retry is needed (server error), return 3 for incorrect secret key, return 4 for empty/invalid MAC addr of self.
+#  ERROR: returns 2 when a retry is needed (server error), return 3 for incorrect secret key, return 4 for empty/invalid MAC addr of self, return 5 if more than 1 request in 8 hours
 #  CATCH-ALL: Returns a 1 for other errors.
 def queryMyMacAddr(self,secret):
     c = this.__curlHandle__
@@ -220,6 +220,9 @@ def queryMyMacAddr(self,secret):
     elif code == 403:
         this.__logger__.warning("queryMyMacAddr:403 Error:msg: " + body)
         return 3  # Permission denied due to initiated
+    elif code == 429:
+        this.__logger__.warning("queryMyMacAddr:429 Error:msg: " + body)
+        return 5  # Permission denied due to initiated
     else:
         #  Unknown Error
         this.__logger__.error("queryMyMacAddr:Unknown Error: " + str(code) + " msg: " + body)
@@ -239,7 +242,7 @@ def forgetUser(MacAddrSelf, secretKey):
     d['Secret'] = secretKey
     # Form data must be provided already urlencoded.
     postfields = json.dumps(d)
-    this.__logger__.debug("forgetUser:postfields="+postfields)
+    this.__logger__.info("forgetUser:postfields="+postfields)
     # Sets request method to POST,
     # Content-Type header to application/x-www-form-urlencoded
     # and data to send in request body.
@@ -287,7 +290,7 @@ def freeResources():
 #  test function, do not call
 def tests():
     print("initiating program")
-    print(init("logFile",None)==False)
+    print(init("logFile",10)==False)
     print(init(os.getcwd()+os.sep+"tmp.log",5)==True)
     self = "FF:11:2E:7A:5B:6A"
     others = "4F:11:2E:7A:5B:6A, 4F:1A:2E:7A:5B:6A, 4F:11:77:7A:5B:6A"
@@ -304,7 +307,7 @@ def tests():
     print(positiveReport(self,secret1,others)==0)
     print(queryMyMacAddr(person2,secret2)==-1)
     print(negativeReport(self,secret1)==0)
-    print(queryMyMacAddr(self,secret1)==0)
+    print(queryMyMacAddr(self,secret1)==5)
 
     print("\nTrying invalid inputs")
     print(initSelf("invalid input")==4)
