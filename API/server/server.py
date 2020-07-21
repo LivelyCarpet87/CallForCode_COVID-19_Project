@@ -6,6 +6,7 @@ import json
 import hashlib
 import os
 import time
+import datetime
 import atexit
 
 import CustomCloudantModules as ccm
@@ -75,16 +76,21 @@ def receiveQueryMyMacAddr():
 		return 'Bad MAC Address!', 400
 	if not verifySecret(addrList[0],secret):
 		return 'Bad Request Key', 403
+	if not passRateLimit(addrList[0]):
+		return 'Too many query requests', 429
 	state = queryAddr(addrList)
 	if state == 1:
+		updateRateLimit(addrList[0])
 		return jsonify(
 			 atRisk = True
 			 ), status.HTTP_200_OK
 	elif state == 0:
+		updateRateLimit(addrList[0])
 		return jsonify(
 				 atRisk = False
 				 ), status.HTTP_200_OK
 	elif state == -1:
+		updateRateLimit(addrList[0])
 		return 'No such user or invalid keys', 403
 	else:
 		return status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -132,13 +138,14 @@ def forgetSelf():
 def initNewUser(selfList):
 	addr = selfList[0]
 	secret = ""
+	time = datetime.date(2013, 8, 1)
 	if not ccm.personExists(addr):
 		secret = hashlib.sha224((addr+str(os.urandom(128))).encode('utf-8')).hexdigest()
-		success = ccm.addPerson(addr,4,secret)  # States: 1. Recovered, 2. Positive, 3. Contacted, 4. Neutral
+		success = ccm.addPerson(addr,4,secret,time)  # States: 1. Recovered, 2. Positive, 3. Contacted, 4. Neutral
 		if not success:
 			raise cloudant.error.CloudantDatabaseException
 	else: #person, exists, but may not be initiated. This only occurs if person contacted a person marked positive
-		if (ccm.getState(addr) == 3 or cmm.getState(addr) == 2 or cmm.getState(addr) == 1) and ccm.getSecretKey(addr) == "":
+		if (ccm.getState(addr) == 3 or ccm.getState(addr) == 2 or ccm.getState(addr) == 1) and ccm.getSecretKey(addr) == "":
 			secret = hashlib.sha224((addr+str(os.urandom(128))).encode('utf-8')).hexdigest()
 			success = ccm.changeSecretKey(addr,secret)
 			if not success:
@@ -178,7 +185,7 @@ def markPositive(addrList, self):
 			# if person not exist, create an unintiated Person with state
 			attempt = 1
 			while attempt <= 10:
-				success = ccm.addPerson(positive,3,"")
+				success = ccm.addPerson(positive,3,"",datetime.date(2013, 8, 1))
 				time.sleep(1)  # Delay to prevent reaching free tier IBM Cloudant limits
 				if success:
 					break
@@ -200,7 +207,7 @@ def markPositive(addrList, self):
 			# if person not exist, create an unintiated Person with state
 			attempt = 1
 			while attempt <= 10:
-				success = ccm.addPerson(positive,2,"")
+				success = ccm.addPerson(positive,2,"",datetime.date(2013, 8, 1))
 				time.sleep(1)  # Delay to prevent reaching free tier IBM Cloudant limits
 				if success:
 					break
@@ -234,6 +241,22 @@ def parseMacAddr(AddrStr):
 		if re.match(isFloodAddr,addr) is not None:
 			addrList.remove(addr)
 	return addrList
+
+
+def passRateLimit(macAddr):
+	currentTime = datetime.datetime.now()
+	lastAccess = ccm.getTimeOfLastAccess(macAddr)
+	allowedTime = lastAccess + datetime.timedelta(hours=8)
+	if currentTime > allowedTime:
+		return True
+	else:
+		return False
+
+
+def updateRateLimit(macAddr):
+	currentTime = datetime.datetime.now()
+	ccm.changeTimeOfLastAccess(macAddr,currentTime)
+
 
 
 @atexit.register

@@ -35,7 +35,7 @@ def init(logFile,verbosityLevel):
 #  PURPOSE: Delcares the user to the server.
 #  INPUT: True MAC address of user as a string
 #  RETURN: A secret key to be used in other requests as a string
-#  ERROR: returns 2 when a retry is needed (server error) and a 3 if the user is already initiated, return 4 for invalid MAC Address
+#  ERROR: returns 2 when a retry is needed (server error) and a 3 if the user is already initiated, return 4 for invalid MAC Address, return 5 for too many queries in 8 hours
 #  CATCH-ALL: Returns a 1 for other errors.
 def initSelf(MacAddrSelf):
     c = this.__curlHandle__
@@ -77,6 +77,9 @@ def initSelf(MacAddrSelf):
     elif code == 403:
         this.__logger__.warning("initSelf:403 Error:msg: " + body)
         return 3  # Permission denied due to initiated
+    elif code == 429:
+        this.__logger__.warning("initSelf:429 Error:msg: " + body)
+        return 5  # Permission denied due to initiated
     else:
         #  Unknown Error
         this.__logger__.error("initSelf:Unknown Error: " + str(code) + " msg: " + body)
@@ -100,7 +103,7 @@ def positiveReport(MacAddrSelf,secretKey,metAddrList):
     # Sets request method to POST,
     # Content-Type header to application/x-www-form-urlencoded
     # and data to send in request body.
-    this.__logger__.debug("positiveReport:postfields="+postfields)
+    this.__logger__.info("positiveReport:postfields="+postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
     c.perform()
@@ -145,7 +148,7 @@ def negativeReport(MacAddrSelf,secretKey):
     # Sets request method to POST,
     # Content-Type header to application/x-www-form-urlencoded
     # and data to send in request body.
-    this.__logger__.debug("negativeReport:postfields="+postfields)
+    this.__logger__.info("negativeReport:postfields="+postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
     c.perform()
@@ -191,6 +194,7 @@ def queryMyMacAddr(self,secret):
     # Sets request method to POST,
     # Content-Type header to application/x-www-form-urlencoded
     # and data to send in request body.
+    this.__logger__.debug("QueryMyMacAddr:postfields="+postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
     c.perform()
