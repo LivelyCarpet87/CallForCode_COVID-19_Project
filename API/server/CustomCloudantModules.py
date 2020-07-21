@@ -5,6 +5,7 @@ from cloudant.error import CloudantException
 from cloudant.result import Result, ResultByKey
 import json
 import sys
+import datetime
 """
 {
   "apikey": "2H6wywEjeW_bjMbET6GLKssHiFfXyoxzeyEZbfEVVDQL",
@@ -53,7 +54,7 @@ def personExists(MAC_Addr):
             return False
 
 
-def addPerson(MAC_Addr,state,secretKey):
+def addPerson(MAC_Addr,state,secretKey,time):
     #  Add a person if not already created
     client = this.__client__
     myDatabase = this.__myDatabase__
@@ -62,6 +63,7 @@ def addPerson(MAC_Addr,state,secretKey):
         data['_id'] = MAC_Addr
         data['State'] = state
         data['SecretKey'] = secretKey
+        data['TimeOfLastAccess'] = time.strftime('%Y-%m-%d_%H:%M:%S.%f')
         try:
             document = myDatabase.create_document(data, throw_on_exists=True)
             return True
@@ -96,6 +98,18 @@ def changeSecretKey(MAC_Addr,secretKey):
         return False
 
 
+def changeTimeOfLastAccess(MAC_Addr,time):
+    # Edit or add user time of last access
+    client = this.__client__
+    myDatabase = this.__myDatabase__
+    if Document(myDatabase, MAC_Addr).exists():
+        with Document(myDatabase, MAC_Addr) as document:
+            document.field_set(document, 'TimeOfLastAccess', time.strftime('%Y-%m-%d_%H:%M:%S.%f'))
+            return True
+    else:
+        return False
+
+
 def getState(MAC_Addr):
     client = this.__client__
     myDatabase = this.__myDatabase__
@@ -116,6 +130,20 @@ def getSecretKey(MAC_Addr):
             return document['SecretKey']
     else:
         return None
+
+
+def getTimeOfLastAccess(MAC_Addr):
+    client = this.__client__
+    myDatabase = this.__myDatabase__
+    if Document(myDatabase, MAC_Addr).exists():
+        with Document(myDatabase, MAC_Addr) as document:
+            document.fetch()
+            strTime = document['TimeOfLastAccess']
+            time = datetime.datetime. strptime(strTime, '%Y-%m-%d_%H:%M:%S.%f')
+            return time
+    else:
+        return None
+
 
 def removePerson(MAC_Addr):
     client = this.__client__
