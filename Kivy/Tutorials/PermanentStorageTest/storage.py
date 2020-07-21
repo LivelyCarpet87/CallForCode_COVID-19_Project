@@ -65,8 +65,12 @@ print(y.getStore().get("macDict")["value"][3])
 
 store = JsonStore('test.json')
 print(store.exists("bob"))
-'''
+
 
 import datetime
 
 print(type(str(datetime.datetime.now())))
+'''
+
+store = JsonStore('0721.json')
+store.put()

@@ -170,6 +170,8 @@ class HomePage(Screen, Widget):
         print("whether previous exist = " + repr(self.store.exists('numEntries')))
 #Determines if the server initiation is correct (should only be a one time thing)
         isSuccessful = True
+        path = "/Users/ryan04px2021/Desktop/SAS/High_School/Junior_(11)/Afterschool_Activities/2020Summer/ActualSummer/CallForCode/CallForCode_COVID-19_Project/Kivy/Tutorials/11Test"
+        client.init(path + "/sth.log", 10)
 #Checks if there is a file. If there is not, initiate all 4 necessary parts
         if (not self.store.exists('numEntries')):
             print("enter")
