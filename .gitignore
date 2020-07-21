@@ -5,3 +5,4 @@
 
 *.log
 *.log.*
+API/server/creds.py

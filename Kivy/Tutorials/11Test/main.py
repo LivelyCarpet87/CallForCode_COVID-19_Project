@@ -8,6 +8,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
+from kivy.graphics import Rectangle
+from kivy.graphics import Color
 from kivy.storage.jsonstore import JsonStore
 
 
@@ -38,8 +40,7 @@ import netifaces
 #os.platform used to identify the os
 #Client secret key
 #Guiunicorn
-
-#Using a for loop to continue requests if the requests failed
+#Using a for loop to continue requests if the request failed
 
 #Manages all permanent storage and adding into the JSON file
 class storageUnit():
