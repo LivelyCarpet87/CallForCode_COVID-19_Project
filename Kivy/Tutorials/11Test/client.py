@@ -22,7 +22,7 @@ def init(logFile,verbosityLevel):
     this.__baseURL__ = 'http://0.0.0.0:8000/'
     this.__curlHandle__ = pycurl.Curl()
     this.__logger__ = logging.getLogger(__name__)
-    rotHandle = logging.handlers.RotatingFileHandler(logFile, maxBytes=1024, backupCount=10)
+    rotHandle = logging.handlers.RotatingFileHandler(logFile, maxBytes=10485760, backupCount=10)
     if verbosityLevel is None:
         rotHandle.setLevel(logging.WARNING)
     else:
