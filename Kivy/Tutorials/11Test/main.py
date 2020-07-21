@@ -31,9 +31,8 @@ import datetime
 import re
 
 #Server / Client
-import importlib
-moduleName = input("client")
-importlib.import_module(moduleName)
+import client
+
 #WHen return from server, remember type
 #os.platform used to identify the os
 #Client secret key
@@ -175,7 +174,7 @@ class HomePage(Screen, Widget):
         if (not self.store.exists('numEntries')):
             print("enter")
             self.store.put("selfMac", value = "78:4f:43:92:25:2e")
-            tempSecret = initSelf(self.store.get("selfMac")["value"])
+            tempSecret = client.initSelf(self.store.get("selfMac")["value"])
             if (tempSecret == 2):
                 tempBut = Button(text = "Server Error, Please quit the app and try again (2)", font_size = 40)
                 self.add_widget(tempBut)
@@ -202,7 +201,7 @@ class HomePage(Screen, Widget):
             self.status = "You are safe!"
     def coronaCatcherButtonClicked(self):
         print("coronaCatcherButton clicked")
-        returnVal = queryMyMacAddr(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
+        returnVal = client.queryMyMacAddr(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
         if (returnVal == -1):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", you have contacted someone with the virus. Please quarantine"
         elif (returnVal == 0):
@@ -253,7 +252,7 @@ class QuitAppPage(Screen):
     def deleteDataAndQuitButtonClicked(self):
         
         print("DeleteData button Clicked")
-        returnValue = forgetUser(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
+        returnValue = client.forgetUser(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
         if (returnValue == 0):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Sucess! You may quit the app"
         elif (returnValue == 2):
@@ -284,7 +283,7 @@ class SendDataPage(Screen):
         
     def imInfectedButtonClicked(self):
         print("imInfected button clicked")
-        returnVal = positiveReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"], self.getCSVString())
+        returnVal = client.positiveReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"], self.getCSVString())
         if (returnVal == 2):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Retry is needed(server error). Restart app and try again (2)"
         elif (returnVal == 3):
@@ -293,7 +292,7 @@ class SendDataPage(Screen):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Invalid CSV. Restart app and contact admin"
     def iJustRecoveredButtonClicked(self):
         print("iJustRecovered button clicked")
-        returnVal = negativeReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
+        returnVal = client.negativeReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
         if (returnVal == 2):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Retry is needed(server error). Restart app and try again (2)"
         elif (returnVal == 3):
@@ -360,5 +359,5 @@ class MyMainApp(App):
 if __name__ == "__main__":
     print("ENTER MOST OUTSIDE")
     MyMainApp().run()
-    freeResources()
+    client.freeResources()
     exit()
