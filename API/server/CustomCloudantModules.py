@@ -6,11 +6,12 @@ from cloudant.result import Result, ResultByKey
 import json
 import sys
 import datetime
+import creds
 
 # Useful variables
 this = sys.modules[__name__]
-this.__username__ = ""
-this.__apiKey__ = ""
+this.__username__ = creds.username
+this.__apiKey__ = creds.apiKey
 this.__client__ = None
 this.__myDatabase__ = None
 def init():
