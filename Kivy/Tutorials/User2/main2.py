@@ -8,6 +8,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
+from kivy.graphics import Rectangle
+from kivy.graphics import Color
 from kivy.storage.jsonstore import JsonStore
 
 
@@ -38,8 +40,6 @@ import netifaces
 #os.platform used to identify the os
 #Client secret key
 #Guiunicorn
-
-#Using a for loop to continue requests if the requests failed
 
 #Manages all permanent storage and adding into the JSON file
 class storageUnit():
@@ -203,33 +203,28 @@ class HomePage(Screen, Widget):
 #Determines if the server initiation is correct (should only be a one time thing)
         isSuccessful = True
         path = "/Users/ryan04px2021/Desktop/SAS/High_School/Junior_(11)/Afterschool_Activities/2020Summer/ActualSummer/CallForCode/CallForCode_COVID-19_Project/Kivy/Tutorials/11Test"
-        client.init(path + "/sth.log", 0)
-        #self.macClass = GetMacAdd()
+        client.init(path + "/sth.log", 10)
 #Checks if there is a file. If there is not, initiate all 4 necessary parts
         if (not self.store.exists('numEntries')):
             print("enter")
-            #self.store.put("selfMac", value = self.macClass.getMacSelf()[0])
-            self.store.put("selfMac", value = "a1:4f:43:92:25:2e")
+            self.store.put("selfMac", value = "a2:4f:43:92:25:2e")
             tempSecret = client.initSelf(self.store.get("selfMac")["value"])
             if (tempSecret == 2):
                 tempBut = Button(text = "Server Error, Please quit the app and try again (2)", font_size = 40)
                 self.add_widget(tempBut)
                 isSuccessful = False
-                print("Server Error, Please quit the app and try again (2)")
             elif (tempSecret == 3):
                 tempBut = Button(text = "User already initiated (3)", font_size = 40)
                 self.add_widget(tempBut)
                 isSuccessful = False
-                print("User already initiated (3)")
             elif (tempSecret == 4):
                 tempBut = Button(text = "Invalid Mac Address, Please quit the app and try again (4)", font_size = 40)
                 self.add_widget(tempBut)
                 isSuccessful = False
-                print("Invalid Mac Address, Please quit the app and try again (4)")
             else:
                 self.store.put("secretKey", value = tempSecret)
                 self.store.put("numEntries", value = 0)
-                self.store.put("macDict", value = {"a2:4f:43:92:25:2e": "07/21/2020"})
+                self.store.put("macDict", value = dict())
                 self.store.put("recentTen", value = list())
                 self.store.put("prevNetwork", value = dict())
         if (isSuccessful):
@@ -243,22 +238,17 @@ class HomePage(Screen, Widget):
         returnVal = client.queryMyMacAddr(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
         if (returnVal == -1):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", you have contacted someone with the virus. Please quarantine"
-            print(self.status)
+            print("You are infected")
         elif (returnVal == 0):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", you are still safe!"
-            print(self.status)
         elif (returnVal == 2):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Server Error, please quit the app and retry (2)"
-            print(self.status)
         elif (returnVal == 3):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Incorrect secret key, you're kinda screwed (3)"
-            print(self.status)
         elif (returnVal == 4):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Invalid mac address, you're kinda screwed (4)"
-            print(self.status)
         else:
             self.status = "1 returned"
-            print(self.status)
 
 
 
@@ -301,22 +291,16 @@ class QuitAppPage(Screen):
         returnValue = client.forgetUser(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
         if (returnValue == 0):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Sucess! You may quit the app"
-            print(self.status)
         elif (returnValue == 2):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Server Error (2)"
-            print(self.status)
         elif (returnValue == 3):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", incorrect secret key (3)"
-            print(self.status)
         elif (returnValue == 4):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", invalid mac addr of self (4)"
-            print(self.status)
         elif (returnValue == 1):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", 1 is returned (1)"
-            print(self.status)
         else:
             self.status = "Checked by " + str(datetime.datetime.now()) + ", server returned unknown command : " + str(returnValue)
-            print(self.status)
     pass
 
 #SendData class page (reference my.kv file)
@@ -338,25 +322,19 @@ class SendDataPage(Screen):
         returnVal = client.positiveReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"], self.getCSVString())
         if (returnVal == 2):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Retry is needed(server error). Restart app and try again (2)"
-            print(self.status)
         elif (returnVal == 3):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Incorrect Secret Key. Restart app and try again (3)"
-            print(self.status)
         elif (returnVal == 4):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Invalid CSV. Restart app and contact admin"
-            print(self.status)
     def iJustRecoveredButtonClicked(self):
         print("iJustRecovered button clicked")
         returnVal = client.negativeReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
         if (returnVal == 2):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Retry is needed(server error). Restart app and try again (2)"
-            print(self.status)
         elif (returnVal == 3):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Incorrect Secret Key. Restart app and try again (3)"
-            print(self.status)
         elif (returnVal == 4):
             self.status = "Checked by " + str(datetime.datetime.now()) + ", Invalid MAC Address of self. Restart app and contact admin (4)"
-            print(self.status)
     pass
 
 #SeeDataPage class page (reference my.kv file)
