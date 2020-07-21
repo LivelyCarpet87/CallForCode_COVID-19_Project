@@ -8,20 +8,20 @@ import sys
 import datetime
 """
 {
-  "apikey": "***REMOVED***",
-  "host": "***REMOVED***.***REMOVED***.appdomain.cloud",
+  "apikey": "",
+  "host": "***REMOVED***-***REMOVED***-***REMOVED***-***REMOVED***-***REMOVED***-bluemix.***REMOVED***.appdomain.cloud",
   "iam_apikey_description": "Auto-generated for key ***REMOVED***-bdbe-41e1-b2ef-***REMOVED***",
   ***REMOVED***
   ***REMOVED***
   "iam_serviceid_crn": "crn:v1:bluemix:public:iam-identity::a/***REMOVED***::serviceid:ServiceId-7e88976c-7e9e-4984-8e9b-b30d72df8b85",
-  "url": "https://***REMOVED***.***REMOVED***.appdomain.cloud",
-  "username": "***REMOVED***"
+  "url": "https://***REMOVED***-***REMOVED***-***REMOVED***-***REMOVED***-***REMOVED***-bluemix.***REMOVED***.appdomain.cloud",
+  "username": ""
 }
 """
 # Useful variables
 this = sys.modules[__name__]
-this.__username__ = "***REMOVED***"
-this.__apiKey__ = "***REMOVED***"
+this.__username__ = ""
+this.__apiKey__ = ""
 this.__client__ = None
 this.__myDatabase__ = None
 def init():
