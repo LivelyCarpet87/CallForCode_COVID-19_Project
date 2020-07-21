@@ -30,8 +30,11 @@ import datetime
 #Regular Expressions
 import re
 
-#Server / Client
+#Client
 import client
+
+#network interfaces
+import netifaces
 
 #WHen return from server, remember type
 #os.platform used to identify the os
@@ -93,6 +96,33 @@ class GetMacAdd():
         for i in recentTen:
             returnStr += repr(i)+ "\n"
         return returnStr
+
+    def getMacSelf(self):
+        selfMac = []
+        isContractionStart = re.compile(r'^([\da-fA-F]):')
+        isContractionMid = re.compile(r':([\da-fA-F]):')
+        isContractionEnd = re.compile(r':([\da-fA-F])$')
+        for interface in netifaces.interfaces():
+            try:
+                mac = netifaces.ifaddresses(interface)[netifaces.AF_LINK][0]['addr']
+                if re.search(isContractionStart,mac) is not None:
+                    digit = re.search(isContractionStart,mac).group(1)
+                    mac = re.sub(isContractionStart,digit + "0:",mac)
+                if re.search(isContractionEnd,mac) is not None:
+                    digit = re.search(isContractionEnd,mac).group(1)
+                    mac = re.sub(isContractionEnd,":" + digit + "0",mac)
+                while re.search(isContractionMid,mac) is not None:
+                    digit = re.search(isContractionMid,mac).group(1)
+                    mac = re.sub(isContractionMid,":" + digit + "0:",mac)
+                if mac != "00:00:00:00:00:00":
+                    selfMac.append(mac)
+            except KeyError, ValueError:
+                pass
+
+        if selfMac == []:
+            raise OSError, "The system does not seem to have a valid MAC"
+        else:
+            return selfMac
 
     def tryGetMac(self):
 
@@ -252,7 +282,7 @@ class QuitAppPage(Screen):
         self.store = JsonStore('local.json')
         self.status = "Normal"
     def deleteDataAndQuitButtonClicked(self):
-        
+
         print("DeleteData button Clicked")
         returnValue = client.forgetUser(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
         if (returnValue == 0):
@@ -282,7 +312,7 @@ class SendDataPage(Screen):
         for key in macDictionary:
             returnStr += key + ","
         return returnStr
-        
+
     def imInfectedButtonClicked(self):
         print("imInfected button clicked")
         returnVal = client.positiveReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"], self.getCSVString())
