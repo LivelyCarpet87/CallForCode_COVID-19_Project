@@ -6,11 +6,11 @@ from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
+from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
 from kivy.graphics import Rectangle
 from kivy.graphics import Color
 from kivy.storage.jsonstore import JsonStore
-import client.py
 
 
 #Changes the window size
@@ -29,6 +29,15 @@ import datetime
 
 #Regular Expressions
 import re
+
+#Server / Client
+import importlib
+moduleName = input("client")
+importlib.import_module(moduleName)
+#WHen return from server, remember type
+#os.platform used to identify the os
+#Client secret key
+#Guiunicorn
 
 #Manages all permanent storage and adding into the JSON file
 class storageUnit():
@@ -160,18 +169,52 @@ class HomePage(Screen, Widget):
 #References the json file called local.json
         self.store = JsonStore('local.json')
         print("whether previous exist = " + repr(self.store.exists('numEntries')))
+#Determines if the server initiation is correct (should only be a one time thing)
+        isSuccessful = True
 #Checks if there is a file. If there is not, initiate all 4 necessary parts
         if (not self.store.exists('numEntries')):
             print("enter")
-            
-            self.store.put("numEntries", value = 0)
-            self.store.put("macDict", value = dict())
-            self.store.put("recentTen", value = list())
-            self.store.put("prevNetwork", value = dict())
-        self.options = ObjectProperty(None)
+            self.store.put("selfMac", value = "78:4f:43:92:25:2e")
+            tempSecret = initSelf(self.store.get("selfMac")["value"])
+            if (tempSecret == 2):
+                tempBut = Button(text = "Server Error, Please quit the app and try again (2)", font_size = 40)
+                self.add_widget(tempBut)
+                isSuccessful = False
+            elif (tempSecret == 3):
+                tempBut = Button(text = "User already initiated (3)", font_size = 40)
+                self.add_widget(tempBut)
+                isSuccessful = False
+            elif (tempSecret == 4):
+                tempBut = Button(text = "Invalid Mac Address, Please quit the app and try again (4)", font_size = 40)
+                self.add_widget(tempBut)
+                isSuccessful = False
+            else:
+                self.store.put("secretKey", value = tempSecret)
+                self.store.put("numEntries", value = 0)
+                self.store.put("macDict", value = dict())
+                self.store.put("recentTen", value = list())
+                self.store.put("prevNetwork", value = dict())
+        if (isSuccessful):
+            self.options = ObjectProperty(None)
 #macClass variable is just used as a reference to be able to call the getMac class
-        self.macClass = GetMacAdd()
-        self.actualMac = self.macClass.getMac()
+            self.macClass = GetMacAdd()
+            self.actualMac = self.macClass.getMac()
+            self.status = "You are safe!"
+    def coronaCatcherButtonClicked(self):
+        print("coronaCatcherButton clicked")
+        returnVal = queryMyMacAddr(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
+        if (returnVal == -1):
+            self.status = "Checked by " + datetime.datetime.now() + ", you have contacted someone with the virus. Please quarantine"
+        elif (returnVal == 0):
+            self.status = "Checked by " + datetime.datetime.now() + ", you are still safe!"
+        elif (returnVal == 2):
+            self.status = "Server Error, please quit the app and retry (2)"
+        elif (returnVal == 3):
+            self.status = "Incorrect secret key, you're kinda screwed (3)"
+        elif (returnVal == 4):
+            self.status = "Invalid mac address, you're kinda screwed (4)"
+        else:
+            self.status = "1 returned"
 
 
 
@@ -210,8 +253,42 @@ class QuitAppPage(Screen):
 
 #SendData class page (reference my.kv file)
 class SendDataPage(Screen):
-    def sendDataButtonClicked(self):
-        print("sendData button clicked")
+    def __init__(self, **kwargs):
+        super(SendDataPage, self).__init__(**kwargs)
+        print("ENTER SENDDATA INIT")
+        self.store = JsonStore('local.json')
+        self.status = "Normal"
+    def getCSVString(self):
+        returnStr = self.store.get("selfMac")["value"] + ","
+        macDictionary = self.store.get("macDict")["value"]
+        for key in macDictionary:
+            returnStr += key + ","
+        return returnStr
+        
+    def imInfectedButtonClicked(self):
+        print("imInfected button clicked")
+        returnVal = positiveReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"], self.getCSVString())
+        if (returnVal == 2):
+            tempBut = Button(text = "Retry is needed(server error). Restart app and try again (2)", font_size = 40)
+            self.add_widget(tempBut)
+        elif (returnVal == 3):
+            tempBut = Button(text = "Incorrect Secret Key. Restart app and try again (3)", font_size = 40)
+            self.add_widget(tempBut)
+        elif (returnVal == 4):
+            tempBut = Button(text = "Invalid CSV. Restart app and contact admin", font_size = 40)
+            self.add_widget(tempBut)
+    def iJustRecoveredButtonClicked(self):
+        print("iJustRecovered button clicked")
+        returnVal = negativeReport(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
+        if (returnVal == 2):
+            tempBut = Button(text = "Retry is needed(server error). Restart app and try again (2)", font_size = 40)
+            self.add_widget(tempBut)
+        elif (returnVal == 3):
+            tempBut = Button(text = "Incorrect Secret Key. Restart app and try again (3)", font_size = 40)
+            self.add_widget(tempBut)
+        elif (returnVal == 4):
+            tempBut = Button(text = "Invalid MAC Address of self. Restart app and contact admin (4)", font_size = 40)
+            self.add_widget(tempBut)
     pass
 
 #SeeDataPage class page (reference my.kv file)
