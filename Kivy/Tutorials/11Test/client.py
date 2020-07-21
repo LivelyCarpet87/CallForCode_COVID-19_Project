@@ -329,4 +329,6 @@ def tests():
     print(forgetUser(person2, secret2)==0)
     freeResources()
 
-#tests()
+
+if __name__ == '__main__':
+    tests()
