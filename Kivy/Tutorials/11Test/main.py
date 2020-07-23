@@ -11,11 +11,10 @@ from kivy.properties import ObjectProperty
 from kivy.graphics import Rectangle
 from kivy.graphics import Color
 from kivy.storage.jsonstore import JsonStore
-
+from kivy.utils import platform
 #Changes the window size
 from kivy.core.window import Window
 Window.size = (kivy.metrics.mm(72.3), kivy.metrics.mm(157.8)) #Height, Width
-
 #MAC Addr collection
 from scapy.all import ARP, Ether, srp
 import netifaces
@@ -24,6 +23,7 @@ import sys
 import subprocess
 import os
 import datetime
+import pathlib
 #Regular Expressions
 import re
 #API Client
@@ -35,21 +35,29 @@ import client
 #Guiunicorn
 #Using a for loop to continue requests if the request failed
 
+if platform != 'android':
+    if os.path.isdir(pathlib.Path.home()):
+        appPath = str(pathlib.Path.home()) + os.sep + '/.CovidContactTracer'
+        if not os.path.isdir(appPath):
+            os.mkdir(appPath)
+    else:
+        raise OSError
+else:
+    appPath = os.path.dirname(__file__)
+
 
 #Manages all permanent storage and adding into the JSON file
 class storageUnit():
 
     def __init__(self):
         print("Before trying to find json file")
-        self.store = JsonStore('local.json')
+        self.store = JsonStore(appPath + os.sep + 'local.json')
         print("Before test of jsonstore file")
-
-"""        if (not self.store.exists("numEntries")):
-            self.store.put("numEntries", value = 0)
-             self.store.put("macDict", value = dict())
-             self.store.put("recentTen", value = list())
-             self.store.put("prevNetwork", value = dict())"""
-
+#        if (not self.store.exists("numEntries")):
+#            self.store.put("numEntries", value = 0)
+#            self.store.put("macDict", value = dict())
+#            self.store.put("recentTen", value = list())
+#            self.store.put("prevNetwork", value = dict())
         print("BEFORE PRINT ________")
         print(self.store.get("prevNetwork")["value"])
         print("AFTER PRINT _________")
@@ -199,18 +207,21 @@ class GetMacAdd():
 
 #Class for the homepage screen
 class HomePage(Screen, Widget):
+
+
     def __init__(self, **kwargs):
         super(HomePage, self).__init__(**kwargs)
+        self.logVerbosity = 20
 #References the json file called local.json
-        self.store = JsonStore('local.json')
+        self.store = JsonStore(appPath + os.sep + 'local.json')
         print("whether previous exist = " + repr(self.store.exists('numEntries')))
 #Determines if the server initiation is correct (should only be a one time thing)
         isSuccessful = True
-        path = os.getcwd()
-        if not os.path.isfile(path + os.sep + "client.log"):
-            f = open(path + os.sep + "client.log", "w")
+
+        if not os.path.isfile(appPath + os.sep + "client.log"):
+            f = open(appPath + os.sep + "client.log", "w")
             f.close()
-        client.init(path + os.sep + "client.log", 0)
+        client.init(appPath + os.sep + "client.log", self.logVerbosity )
         #self.macClass = GetMacAdd()
 #Checks if there is a file. If there is not, initiate all 4 necessary parts
         if (not self.store.exists('numEntries')):
@@ -245,6 +256,8 @@ class HomePage(Screen, Widget):
             self.macClass = GetMacAdd()
             self.actualMac = self.macClass.getMac()
             self.status = "You are safe!"
+
+
     def coronaCatcherButtonClicked(self):
         print("coronaCatcherButton clicked")
         returnVal = client.queryMyMacAddr(self.store.get("selfMac")["value"], self.store.get("secretKey")["value"])
@@ -300,7 +313,7 @@ class QuitAppPage(Screen):
     def __init__(self, **kwargs):
         super(QuitAppPage, self).__init__(**kwargs)
         print("ENTER QuitApp INIT")
-        self.store = JsonStore('local.json')
+        self.store = JsonStore(appPath + os.sep + 'local.json')
         self.status = "Normal"
     def deleteDataAndQuitButtonClicked(self):
 
@@ -331,7 +344,7 @@ class SendDataPage(Screen):
     def __init__(self, **kwargs):
         super(SendDataPage, self).__init__(**kwargs)
         print("ENTER SENDDATA INIT")
-        self.store = JsonStore('local.json')
+        self.store = JsonStore(appPath + os.sep + 'local.json')
         self.status = "Normal"
     def getCSVString(self):
         returnStr = self.store.get("selfMac")["value"] + ","
@@ -371,7 +384,7 @@ class SeeDataPage(Screen):
     def __init__(self, **kwargs):
         super(SeeDataPage, self).__init__(**kwargs)
         print("ENTER SEEDATAPAGE INIT")
-        self.store = JsonStore('local.json')
+        self.store = JsonStore(appPath + os.sep + 'local.json')
 #Used for future reference and changing the data in the table
         self.data = [0] * 20
 #Stores the recentTen aspect of the json file
@@ -410,14 +423,16 @@ class MyMainApp(App):
     def build(self):
         print(Window.size)
         print(type(Window.size))
-        """store = JsonStore('local.json')
+        """
+        store = JsonStore('local.json')
         print(store.exists('numEntries'))
         if (not store.exists('numEntries')):
             print("enter")
             store.put("numEntries", value = 0)
             store.put("macDict", value = dict())
             store.put("recentTen", value = list())
-            store.put("prevNetwork", value = dict())"""
+            store.put("prevNetwork", value = dict())
+        """
         return kv
 
 

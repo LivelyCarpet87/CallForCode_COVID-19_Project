@@ -50,7 +50,11 @@ def initSelf(MacAddrSelf):
     this.__logger__.debug("initSelf:postfields=" + postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
-    c.perform()
+    try:
+        c.perform()
+    except pycurl.error:
+        this.__logger__.error("initSelf:PyCurl error")
+
 
     code = c.getinfo(pycurl.HTTP_CODE)
     body = this.__buffer_obj__.getvalue().decode('utf-8')
@@ -103,7 +107,10 @@ def positiveReport(MacAddrSelf,secretKey,metAddrList):
     this.__logger__.info("positiveReport:postfields="+postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
-    c.perform()
+    try:
+        c.perform()
+    except pycurl.error:
+        this.__logger__.error("positiveReport:PyCurl error")
 
     code = c.getinfo(pycurl.HTTP_CODE)
     body = str(this.__buffer_obj__.getvalue())
@@ -148,7 +155,10 @@ def negativeReport(MacAddrSelf,secretKey):
     this.__logger__.info("negativeReport:postfields="+postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
-    c.perform()
+    try:
+        c.perform()
+    except pycurl.error:
+        this.__logger__.error("negativeReport:PyCurl error")
 
     code = c.getinfo(pycurl.HTTP_CODE)
     body = str(this.__buffer_obj__.getvalue())
@@ -194,7 +204,10 @@ def queryMyMacAddr(self,secret):
     this.__logger__.debug("QueryMyMacAddr:postfields="+postfields)
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
-    c.perform()
+    try:
+        c.perform()
+    except pycurl.error:
+        this.__logger__.error("QueryMyMacAddr:PyCurl error")
 
     code = c.getinfo(pycurl.HTTP_CODE)
     body = str(this.__buffer_obj__.getvalue())
@@ -245,7 +258,10 @@ def forgetUser(MacAddrSelf, secretKey):
     # and data to send in request body.
     c.setopt(c.POSTFIELDS, postfields)
     c.setopt(c.WRITEFUNCTION, this.__buffer_obj__.write)
-    c.perform()
+    try:
+        c.perform()
+    except pycurl.error:
+        this.__logger__.error("forgetUser:PyCurl error")
 
     code = c.getinfo(pycurl.HTTP_CODE)
     body = str(this.__buffer_obj__.getvalue())
