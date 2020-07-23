@@ -12,35 +12,29 @@ from kivy.graphics import Rectangle
 from kivy.graphics import Color
 from kivy.storage.jsonstore import JsonStore
 
-
 #Changes the window size
 from kivy.core.window import Window
 Window.size = (kivy.metrics.mm(72.3), kivy.metrics.mm(157.8)) #Height, Width
 
-
-#MAC
+#MAC Addr collection
 from scapy.all import ARP, Ether, srp
+import netifaces
+#System imports
 import sys
 import subprocess
 import os
-
-#TIME
 import datetime
-
 #Regular Expressions
 import re
-
-#Client
+#API Client
 import client
-
-#network interfaces
-import netifaces
 
 #WHen return from server, remember type
 #os.platform used to identify the os
 #Client secret key
 #Guiunicorn
 #Using a for loop to continue requests if the request failed
+
 
 #Manages all permanent storage and adding into the JSON file
 class storageUnit():
@@ -49,16 +43,19 @@ class storageUnit():
         print("Before trying to find json file")
         self.store = JsonStore('local.json')
         print("Before test of jsonstore file")
-#        if (not self.store.exists("numEntries")):
-#            self.store.put("numEntries", value = 0)
- #           self.store.put("macDict", value = dict())
-#            self.store.put("recentTen", value = list())
-#            self.store.put("prevNetwork", value = dict())
+
+"""        if (not self.store.exists("numEntries")):
+            self.store.put("numEntries", value = 0)
+             self.store.put("macDict", value = dict())
+             self.store.put("recentTen", value = list())
+             self.store.put("prevNetwork", value = dict())"""
+
         print("BEFORE PRINT ________")
         print(self.store.get("prevNetwork")["value"])
         print("AFTER PRINT _________")
 
-#Adds a unknown / new mac address that was not on the previous network into the json file
+
+    #Adds a unknown / new mac address that was not on the previous network into the json file
     def addEntry(self, macAddress, time):
         if macAddress in self.store.get("macDict")["value"]:
             self.store.get("macDict")["value"][macAddress] += [time]#HEREEE
@@ -69,13 +66,16 @@ class storageUnit():
             self.store.get("macDict")["value"][macAddress] = [time]
             self.store.get("recentTen")["value"] = [[time, macAddress]] + self.store.get("recentTen")["value"][:9]
             #self.store.get("prevNetwork")["value"][macAddress] = 0
-#Checks if the previous prevNetwork is the same as foreignSet, which is a set
+
+
+    #Checks if the previous prevNetwork is the same as foreignSet, which is a set
     def isSamePrevNetwork(self, foreignSet):
         returnArr = []
         for i in foreignSet:
             if i not in self.store.get("prevNetwork")["value"]:
                 returnArr += [i]
         return returnArr
+
 
 #This entire class is meant for macAddress collection
 class GetMacAdd():
@@ -92,11 +92,13 @@ class GetMacAdd():
         macList = self.getMac()
         self.label3.text = "SelfMac : " + macList
 
+
     def getString(self, recentTen):
         returnStr = ""
         for i in recentTen:
             returnStr += repr(i)+ "\n"
         return returnStr
+
 
     def getMacSelf(self):
         selfMac = []
@@ -127,8 +129,8 @@ class GetMacAdd():
         else:
             return selfMac
 
-    def tryGetMac(self):
 
+    def tryGetMac(self):
         fails = 0
         if os.path.isfile(os.sep+"proc"+os.sep+"net"+os.sep+"arp"):
             if os.access(os.sep+"proc"+os.sep+"net"+os.sep+"arp", os.R_OK):
@@ -149,6 +151,7 @@ class GetMacAdd():
             pass
         self.supported = False #  Documents whether our mac address collection method is supported
         return ""
+
 
     def getMac(self):
         result = self.tryGetMac()
@@ -407,14 +410,14 @@ class MyMainApp(App):
     def build(self):
         print(Window.size)
         print(type(Window.size))
-#        store = JsonStore('local.json')
-#        print(store.exists('numEntries'))
-#        if (not store.exists('numEntries')):
-#            print("enter")
-#            store.put("numEntries", value = 0)
-#            store.put("macDict", value = dict())
-#            store.put("recentTen", value = list())
- #           store.put("prevNetwork", value = dict())
+        """store = JsonStore('local.json')
+        print(store.exists('numEntries'))
+        if (not store.exists('numEntries')):
+            print("enter")
+            store.put("numEntries", value = 0)
+            store.put("macDict", value = dict())
+            store.put("recentTen", value = list())
+            store.put("prevNetwork", value = dict())"""
         return kv
 
 
