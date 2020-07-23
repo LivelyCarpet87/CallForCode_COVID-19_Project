@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">COVID-19 Contact Tracer</string>
-    <string name="private_version">1595508261.369532</string>
+    <string name="private_version">1595515439.4484918</string>
     <string name="presplash_color">#000000</string>
     <string name="urlScheme">kivy</string>
 </resources>

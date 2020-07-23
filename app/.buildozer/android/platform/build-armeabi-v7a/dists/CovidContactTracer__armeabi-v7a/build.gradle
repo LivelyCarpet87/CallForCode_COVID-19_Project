@@ -33,7 +33,9 @@ android {
         versionName '0.1'
     }
 
-	
+	packagingOptions {
+		doNotStrip '**/*.so'
+	}
 
 	
 

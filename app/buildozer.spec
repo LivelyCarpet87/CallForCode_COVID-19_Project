@@ -36,7 +36,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy
+requirements = python3,kivy, pycurl, netifaces
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -85,10 +85,10 @@ fullscreen = 0
 #android.presplash_color = #FFFFFF
 
 # (list) Permissions
-#android.permissions = INTERNET
+#android.permissions = INTERNET, READ_INTERNAL_STORAGE, WRITE_INTERNAL_STORAGE, ACCESS_COARSE_LOCATION
 
 # (int) Target Android API, should be as high as possible.
-#android.api = 27
+#android.api = 28
 
 # (int) Minimum API your APK will support.
 #android.minapi = 21
