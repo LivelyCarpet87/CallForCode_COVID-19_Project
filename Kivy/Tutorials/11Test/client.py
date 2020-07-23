@@ -1,7 +1,6 @@
 import pycurl
 import sys
 import json
-import urllib.parse
 import re
 try:
     from io import BytesIO

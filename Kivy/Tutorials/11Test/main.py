@@ -16,18 +16,196 @@ from kivy.utils import platform
 from kivy.core.window import Window
 Window.size = (kivy.metrics.mm(72.3), kivy.metrics.mm(157.8)) #Height, Width
 #MAC Addr collection
-from scapy.all import ARP, Ether, srp
 import netifaces
 #System imports
 import sys
 import subprocess
 import os
 import datetime
-import pathlib
+from pathlib import Path
 #Regular Expressions
 import re
 #API Client
 import client
+
+kvStr = """
+WindowManager:
+    HomePage:
+    SideBarPage:
+    AboutUsPage:
+    QuitAppPage:
+    SendDataPage:
+    SeeDataPage:
+
+
+<HomePage>:
+    name: "home"
+    Button:
+        pos_hint: {"x": 0.05, "top": 0.97}
+        size_hint: 0.2, 0.05
+        text: "Options"
+        on_release:
+            app.root.current = "sidebar"
+            root.manager.transition.direction = "left"
+    Button:
+        pos_hint: {"center_x":0.5, "center_y": 0.8 }
+        size_hint: 0.7, 0.2
+        text: "CoronaCatcher (Click to check mac)"
+        on_release:
+            root.calculateMac()
+    Label:
+        pos_hint: {"center_x": 0.5, "center_y": 0.6}
+        size_hint: 0.7, 0.1
+        text: root.actualMac
+    Label:
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        size_hint: 0.7, 0.1
+        text: "PlaceHolder for YOUR NETWORK"
+    Label:
+        pos_hint: {"center_x": 0.5, "bottom": 0}
+        size_hint: 1, 0.05
+        text: root.status
+
+
+
+<SideBarPage>:
+    name: "sidebar"
+    GridLayout:
+        cols: 1
+
+        Button:
+            text: "Home"
+            on_release:
+                app.root.current = "home"
+                root.manager.transition.direction = "right"
+
+        Button:
+            text: "About Us"
+            on_release:
+                app.root.current = "aboutus"
+                root.manager.transition.direction = "left"
+
+        Button:
+            text: "My MAC Addresses"
+            on_release:
+                app.root.current = "seedata"
+                root.manager.transition.direction = "left"
+
+        Button:
+            text: "Delete Data & Quit"
+            on_release:
+                app.root.current = "quitapp"
+                root.manager.transition.direction = "left"
+
+        Button:
+            text: "I'm Infected"
+            on_release:
+                app.root.current = "senddata"
+                root.manager.transition.direction = "left"
+
+
+
+
+<AboutUsPage>:
+    name: "aboutus"
+
+    Button:
+        pos_hint: {"x": 0.05, "top": 0.97}
+        size_hint: 0.2, 0.05
+        text: "Options"
+        on_release:
+            app.root.current = "sidebar"
+            root.manager.transition.direction = "right"
+    Label:
+        pos_hint: {"center_x": 0.5, "center_y": 0.8}
+        size_hint: 0.4, 0.1
+        text: "Our Team"
+
+    Label:
+        pos_hint: {"center_x": 0.5, "center_y": 0.7}
+        size_hint: 0.4, 0.8
+        text: "We are a team of cool students :/"
+        outline_color : 100, 0, 0
+
+
+
+
+
+<QuitAppPage>:
+    name: "quitapp"
+    Button:
+        pos_hint: {"x": 0.05, "top": 0.97}
+        size_hint: 0.2, 0.05
+        text: "Options"
+        on_release:
+            app.root.current = "sidebar"
+            root.manager.transition.direction = "right"
+
+
+
+    Button:
+        pos_hint: {"center_x": 0.5, "center_y": 0.7}
+        size_hint: 0.7, 0.12
+        text: "Delete Data"
+        on_release:
+            root.deleteDataAndQuitButtonClicked()
+    Label:
+        pos_hint: {"center_x": 0.5, "bottom": 0}
+        size_hint: 1, 0.05
+        text: root.status
+
+
+
+<SendDataPage>:
+    name: "senddata"
+    Button:
+        pos_hint: {"x": 0.05, "top": 0.97}
+        size_hint: 0.2, 0.05
+        text: "Options"
+        on_release:
+            app.root.current = "sidebar"
+            root.manager.transition.direction = "right"
+
+    Button:
+        pos_hint: {"center_x": 0.5, "center_y": 0.7}
+        size_hint: 0.7, 0.12
+        text: "I'm Infected"
+        on_release:
+            root.imInfectedButtonClicked()
+    Button:
+        pos_hint: {"center_x": 0.5, "center_y": 0.55}
+        size_hint: 0.7, 0.12
+        text: "I just recovered"
+        on_release:
+            root.iJustRecoveredButtonClicked()
+    Label:
+        pos_hint: {"center_x": 0.5, "bottom": 0}
+        size_hint: 1, 0.05
+        text: root.status
+
+
+<SeeDataPage>:
+    name: "seedata"
+
+    Button:
+        pos_hint: {"x": 0.05, "top": 0.97}
+        size_hint: 0.2, 0.05
+        text: "Options"
+        on_release:
+            app.root.current = "sidebar"
+            root.manager.transition.direction = "right"
+
+    Button:
+        pos_hint: {"right": 0.95, "top": 0.97}
+        size_hint: 0.2, 0.05
+        text: "Renew"
+        on_release:
+            root.renewRecentTen()
+
+
+
+
+        """
 
 #WHen return from server, remember type
 #os.platform used to identify the os
@@ -36,8 +214,8 @@ import client
 #Using a for loop to continue requests if the request failed
 
 if platform != 'android':
-    if os.path.isdir(pathlib.Path.home()):
-        appPath = str(pathlib.Path.home()) + os.sep + '/.CovidContactTracer'
+    if os.path.isdir(Path.home()):
+        appPath = str(Path.home()) + os.sep + '/.CovidContactTracer'
         if not os.path.isdir(appPath):
             os.mkdir(appPath)
     else:
@@ -417,7 +595,7 @@ class SeeDataPage(Screen):
 class WindowManager(ScreenManager):
     pass
 
-kv = Builder.load_file("my.kv")
+kv = Builder.load_string(kvStr)
 
 class MyMainApp(App):
     def build(self):
