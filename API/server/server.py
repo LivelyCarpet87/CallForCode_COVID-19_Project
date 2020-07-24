@@ -26,6 +26,8 @@ app = flask.Flask(__name__)
 @app.route('/InitSelf', methods=["POST"])
 def initSelf():
 	data = request.get_json(force=True)
+	if 'Self' not in data:
+		return 'Improper Request', 400
 	self = data['Self']
 	selfList = parseMacAddr(self)
 	if not selfList:
@@ -47,6 +49,9 @@ def initSelf():
 @app.route('/positiveReport', methods=["POST"])
 def receivePositiveReport():
 	data = request.get_json(force=True)
+	if not ('Self' in data and 'Secret' in data and 'MetAddrList' in data):
+		return 'Improper Request', 400
+	print('Self' in data and 'Secret' in data and 'MetAddrList' in data)
 	self = data['Self']
 	secret = data['Secret']
 	metAddrList = data['MetAddrList']
@@ -69,6 +74,8 @@ def receivePositiveReport():
 @app.route('/QueryMyMacAddr', methods=["POST"])
 def receiveQueryMyMacAddr():
 	data = request.get_json(force=True)
+	if 'Self' not in data or 'Secret' not in data:
+		return 'Improper Request', 400
 	self = data['Self']
 	secret = data['Secret']
 	addrList = parseMacAddr(self)
@@ -102,6 +109,8 @@ def receiveQueryMyMacAddr():
 @app.route('/negativeReport', methods=["POST"])
 def receiveNegativeReport():
 	data = request.get_json(force=True)
+	if 'Self' not in data or 'Secret' not in data:
+		return 'Improper Request', 400
 	self = data['Self']
 	secret = data['Secret']
 	addr = parseMacAddr(self)
@@ -120,6 +129,8 @@ def receiveNegativeReport():
 @app.route('/ForgetMe', methods=["POST"])
 def forgetSelf():
 	data = request.get_json(force=True)
+	if 'Self' not in data or 'Secret' not in data:
+		return 'Improper Request', 400
 	self = data['Self']
 	secret = data['Secret']
 	addr = parseMacAddr(self)
@@ -260,6 +271,17 @@ def updateRateLimit(macAddr):
 	currentTime = datetime.datetime.now()
 	ccm.changeTimeOfLastAccess(macAddr,currentTime)
 
+
+@app.route('/resetDatabase', methods=["POST"])
+def databaseReset():
+	data = request.get_json(force=True)
+	if 'key' not in data:
+		return "Permission Denied",403
+	key = data['key']
+	if ccm.resetDatabase(key):
+		return "Action Completed", 202
+	else:
+		return "Permission Denied", 403
 
 
 @atexit.register

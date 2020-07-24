@@ -14,17 +14,16 @@ this.__username__ = creds.username
 this.__apiKey__ = creds.apiKey
 this.__client__ = None
 this.__myDatabase__ = None
+# This is the name of the database we are working with.
+this.databaseName = "persons_db"
 def init():
-    # This is the name of the database we are working with.
-    databaseName = "persons_db"
-
     client = Cloudant.iam(this.__username__, this.__apiKey__)
     client.connect()
 
-    myDatabase = client.create_database(databaseName)
+    myDatabase = client.create_database(this.databaseName)
     if not myDatabase.exists():
         #  IDK, raise some error or panic
-        client.create_database(databaseName)
+        client.create_database(this.databaseName)
     this.__client__ = client
     this.__myDatabase__ = myDatabase
 
@@ -152,6 +151,16 @@ def cloudantCleanup():
     client = this.__client__
     if client:
         client.disconnect()
+
+def resetDatabase(key):
+    client = this.__client__
+    if key == creds.resetAuth:
+        client.delete_database(this.databaseName)
+        this.__myDatabase__ = client.create_database(this.databaseName)
+        return True
+    else:
+        return False
+
 
 def testCloudant():
     init()
